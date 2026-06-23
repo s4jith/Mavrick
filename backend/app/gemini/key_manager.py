@@ -33,7 +33,7 @@ class KeyState:
     last_used: float = 0.0
 
     def masked(self) -> str:
-        return f"key#{self.index}(…{self.key[-4:]})"
+        return f"key#{self.index}(...{self.key[-4:]})"
 
 
 class KeyManager:
@@ -85,7 +85,7 @@ class KeyManager:
     def report_success(self, st: KeyState) -> None:
         with self._lock:
             st.count += 1
-            log.info("%s ok — %d/%d used today", st.masked(), st.count, self._daily_limit)
+            log.info("%s ok - %d/%d used today", st.masked(), st.count, self._daily_limit)
 
     def report_rate_limited(self, st: KeyState, retry_after: float | None = None) -> None:
         with self._lock:

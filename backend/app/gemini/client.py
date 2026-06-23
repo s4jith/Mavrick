@@ -35,10 +35,27 @@ class CallMeta:
     latency_ms: int
 
 
-def _is_rate_limit(err: Exception) -> bool:
+def _status_code(err: Exception) -> int | None:
     code = getattr(err, "code", None)
+    if isinstance(code, int):
+        return code
+    return getattr(err, "status_code", None)
+
+
+def _is_rate_limit(err: Exception) -> bool:
+    if _status_code(err) == 429:
+        return True
     text = str(err).upper()
-    return code == 429 or "RESOURCE_EXHAUSTED" in text or "RATE" in text and "LIMIT" in text
+    return "RESOURCE_EXHAUSTED" in text or ("RATE" in text and "LIMIT" in text)
+
+
+def _is_transient(err: Exception) -> bool:
+    """Server-side hiccups (model overloaded / unavailable) — worth a retry."""
+    code = _status_code(err)
+    if code in (500, 502, 503, 504):
+        return True
+    text = str(err).upper()
+    return "UNAVAILABLE" in text or "OVERLOADED" in text or "INTERNAL" in text
 
 
 class GeminiClient:
@@ -67,7 +84,7 @@ class GeminiClient:
         if cache_key:
             hit = self._cache.get(cache_key)
             if hit is not None:
-                log.info("cache hit (%s) — 0 keys spent", cache_key[:12])
+                log.info("cache hit (%s) - 0 keys spent", cache_key[:12])
                 return hit, CallMeta(cached=True, key_index=None, latency_ms=0)
 
         config = types.GenerateContentConfig(
@@ -77,16 +94,15 @@ class GeminiClient:
             temperature=temperature,
         )
 
-        attempts = 0
-        max_attempts = len(self._settings.gemini_keys)
+        # Allow a few extra attempts for transient server errors on top of the
+        # per-key rotation budget.
+        max_attempts = len(self._settings.gemini_keys) + 2
+        transient_retries = 0
+        max_transient = 3
         last_err: Exception | None = None
 
-        while attempts < max_attempts:
-            try:
-                st = self._keys.acquire()
-            except NoKeyAvailable:
-                raise
-            attempts += 1
+        for attempt in range(1, max_attempts + 1):
+            st = self._keys.acquire()  # raises NoKeyAvailable if all spent
             client = self._client_for(st.key)
             t0 = time.perf_counter()
             try:
@@ -106,13 +122,27 @@ class GeminiClient:
                 last_err = err
                 if _is_rate_limit(err):
                     self._keys.report_rate_limited(st)
-                    log.warning("retrying on next key (%d/%d)", attempts, max_attempts)
+                    log.warning("rate limit on %s; rotating key", st.masked())
+                    continue
+                if _is_transient(err):
+                    transient_retries += 1
+                    if transient_retries > max_transient:
+                        log.error("Gemini overloaded after %d retries", max_transient)
+                        raise
+                    backoff = 1.5 * transient_retries
+                    log.warning(
+                        "transient %s on %s; backoff %.1fs then rotate",
+                        _status_code(err),
+                        st.masked(),
+                        backoff,
+                    )
+                    time.sleep(backoff)
                     continue
                 log.error("Gemini API error on %s: %s", st.masked(), err)
                 raise
 
         raise NoKeyAvailable(
-            f"All keys rate-limited after {attempts} attempts."
+            f"Exhausted {max_attempts} attempts across keys."
         ) from last_err
 
     @staticmethod
