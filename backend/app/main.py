@@ -3,10 +3,11 @@ from __future__ import annotations
 
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from . import __version__
+from .agents.fallback import make_fallback_plan
 from .agents.planner import make_plan
 from .core.schemas import PlanRequest, PlanResponse
 from .gemini.key_manager import NoKeyAvailable
@@ -56,8 +57,5 @@ def plan(req: PlanRequest) -> PlanResponse:
     try:
         return make_plan(req)
     except NoKeyAvailable as err:
-        log.error("No Gemini capacity: %s", err)
-        raise HTTPException(
-            status_code=503,
-            detail="All API keys are exhausted for today. Try again later.",
-        ) from err
+        log.warning("No Gemini capacity — returning degraded fallback plan: %s", err)
+        return make_fallback_plan(req.text, req.minutes_left)

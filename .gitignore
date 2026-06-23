@@ -10,6 +10,9 @@
 my-reference/
 LastMinuteLifeSaver_Blueprint.pdf
 
+# --- Runtime data ---
+backend/data/
+
 # --- Python / FastAPI ---
 __pycache__/
 *.py[cod]

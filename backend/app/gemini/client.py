@@ -85,6 +85,9 @@ class GeminiClient:
             hit = self._cache.get(cache_key)
             if hit is not None:
                 log.info("cache hit (%s) - 0 keys spent", cache_key[:12])
+                # Cache stores plain dicts (JSON round-trip); rehydrate to schema.
+                if isinstance(hit, dict):
+                    hit = response_schema.model_validate(hit)
                 return hit, CallMeta(cached=True, key_index=None, latency_ms=0)
 
         config = types.GenerateContentConfig(

@@ -16,9 +16,9 @@ Mavrick turns **panic into a plan**. A user describes a crisis + how much time i
 |---|---|
 | Frontend | **React + TypeScript + Vite**, PWA, Material Design 3 tokens |
 | Backend | **FastAPI** (Python 3.10+) |
-| LLM | **Gemini 2.5 Flash** (thinking off for fast steps, on for the Planner) |
+| LLM | **Gemini 2.5 Flash** — single model everywhere; thinking off for speed-critical agents, on for the Planner |
 | DB | **Firestore** (Firebase) — see DB & Cache section |
-| Cache / counters | **Redis** (Upstash free tier) — see DB & Cache section |
+| Cache | **SQLite** (`backend/data/cache.db`, auto-created) for hackathon; Upstash Redis is the production swap |
 
 ## Repo structure (target)
 ```
@@ -29,9 +29,10 @@ mavrick/
 │  ├─ app/
 │  │  ├─ main.py            # FastAPI entry
 │  │  ├─ gemini/            # key manager + client wrapper
-│  │  ├─ agents/            # intake/planner/coach logic (few are LLM)
-│  │  ├─ core/              # urgency scoring, time-block math (pure Python)
-│  │  └─ store/             # Firestore + cache adapters
+│  │  ├─ agents/            # planner + fallback (degraded mode)
+│  │  ├─ core/              # urgency scoring, clusters, schemas (pure Python)
+│  │  └─ store/             # SQLite cache adapter (swap to Redis later)
+│  ├─ data/                 # cache.db lives here (gitignored)
 │  └─ requirements.txt
 ├─ my-reference/      # concept + architecture docs
 └─ CLAUDE.md
@@ -58,15 +59,15 @@ Only call Gemini where genuine reasoning is required. Do everything else in plai
 
 ### Rule 2 — Cache before you call
 - Hash the normalized input. If we've planned a near-identical crisis, **return the cached plan — 0 calls**.
-- Cache stored in Redis (key: `plan:{hash}`), TTL ~24h.
+- Cache stored in SQLite (`backend/data/cache.db`), TTL 24h. Survives backend restarts.
 - Pre-seed the **demo inputs** so the live demo costs **zero** Gemini calls and never rate-limits on stage.
 
 ### Rule 3 — Round-robin key rotation (`backend/app/gemini/key_manager.py`)
 - Hold N keys, each with: `daily_count`, `reset_date`, `cooling_until` (for 429s).
 - `get_key()` → round-robin pointer picks the **next key that is** (a) under its daily cap and (b) not cooling down.
 - On a `429`/rate-limit response: mark that key `cooling_until = now + backoff`, rotate to next key, retry.
-- If **all** keys are exhausted/cooling: serve cached/degraded response, never hard-fail the UI.
-- Counters are in-memory today (single instance); swap to Redis (`key:{i}:count`, `key:{i}:reset`) when we scale. Reset daily.
+- If **all** keys are exhausted/cooling: `make_fallback_plan()` in `agents/fallback.py` returns a generic triage plan — never hard-fail the UI.
+- Counters are in-memory (single instance); swap to Redis when scaling. Reset daily.
 - Keys come from `backend/.env` as `GEMINI_API_KEY_1..N` (never hardcode, never commit). Implemented in [backend/app/gemini/key_manager.py](./backend/app/gemini/key_manager.py).
 
 ### Rule 4 — Squeeze each call
@@ -77,10 +78,10 @@ Only call Gemini where genuine reasoning is required. Do everything else in plai
 ---
 
 ## DB & Cache decision
-- **Google Cloud Storage is NOT a database or a cache** — it's file/object storage (images, audio, exports). Don't use it for app data or counters.
-- **Database → Firestore** (Firebase). Real-time, generous free tier, fits the Google-first story, accessed from FastAPI via the `firebase-admin` Python SDK. Stores users, crises, plans, and the 3-layer memory.
-- **Cache + key counters → Redis (Upstash free tier)**. Serverless, HTTP-based, no infra to run. Holds plan cache, rate-limit counters, and round-robin state.
-- **Hackathon fallback (single backend instance):** if you'd rather not add Upstash on day one, an in-process dict + SQLite works for the spine — but Redis is the right answer once persistence/restarts matter. Code talks to a `store/` adapter so we can swap without touching agents.
+- **Google Cloud Storage is NOT a database or a cache** — it's file/object storage. Don't use it for app data.
+- **Database → Firestore** (Firebase). Real-time, generous free tier, fits the Google-first story. Stores users, crises, plans, and the 3-layer memory. (Not yet wired — next milestone.)
+- **Cache → SQLite** (`backend/data/cache.db`, auto-created). Zero-dependency, survives restarts, correct for a single-instance hackathon backend. The `store/cache.py` adapter exposes `get`/`set` so swapping to Upstash Redis later requires touching only that file.
+- **Degraded mode** — when all keys are exhausted, `agents/fallback.py` returns a generic triage plan. The UI always gets a usable response.
 
 ---
 
@@ -105,12 +106,14 @@ npm run dev
 
 ## Current status
 - [x] Concept + architecture docs (`my-reference/`)
-- [x] Backend scaffold (FastAPI + Gemini key manager, round-robin + cache)
-- [x] Spine: `POST /api/plan` -> classify + plan in ONE Gemini call
-- [x] Verified live: real plans returned; HTTP cache returns repeats for 0 calls
+- [x] Backend scaffold (FastAPI + Gemini key manager, round-robin)
+- [x] Spine: `POST /api/plan` → classify + plan in ONE Gemini 2.5 Flash call
+- [x] Verified live: real plans returned; cache returns repeats for 0 calls
 - [x] Frontend: React PWA + Panic Mode screen wired to the live API
-- [ ] Persistence (Firestore) + cache (Redis)
-- [ ] Features: voice, Gmail scan, Calendar, Coach/TTS, memory
+- [x] Persistent SQLite cache — plans survive backend restarts (`backend/data/cache.db`)
+- [x] Degraded fallback — generic triage plan returned when all API keys exhausted (no 503)
+- [ ] Firestore persistence (user memory, history)
+- [ ] Features: voice, Gmail scan, Calendar write, Coach/TTS
 
 ## Run the full product (two terminals)
 ```
