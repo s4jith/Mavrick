@@ -107,7 +107,18 @@ npm run dev
 - [x] Concept + architecture docs (`my-reference/`)
 - [x] Backend scaffold (FastAPI + Gemini key manager, round-robin + cache)
 - [x] Spine: `POST /api/plan` -> classify + plan in ONE Gemini call
-- [ ] Smoke-test one real Gemini call
-- [ ] Frontend scaffold (React PWA + Panic Mode screen)
+- [x] Verified live: real plans returned; HTTP cache returns repeats for 0 calls
+- [x] Frontend: React PWA + Panic Mode screen wired to the live API
 - [ ] Persistence (Firestore) + cache (Redis)
 - [ ] Features: voice, Gmail scan, Calendar, Coach/TTS, memory
+
+## Run the full product (two terminals)
+```
+# Terminal 1 — backend
+cd backend && uvicorn app.main:app --reload      # http://localhost:8000
+
+# Terminal 2 — frontend
+cd frontend && npm run dev                        # http://localhost:5173
+```
+Open http://localhost:5173. The Vite dev server proxies `/api` and `/health`
+to the backend on :8000.
