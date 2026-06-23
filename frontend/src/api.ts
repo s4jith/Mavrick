@@ -1,7 +1,5 @@
-import type { CoachRequest, CoachResponse, Health, PlanRequest, PlanResponse } from './types'
+import type { CoachRequest, CoachResponse, Health, PlanRequest, PlanResponse, UserLogin, UserRegister, Token, UserResponse } from './types'
 
-// In dev, Vite proxies /api and /health to the FastAPI backend.
-// In prod, set VITE_API_BASE to the deployed backend origin.
 const BASE = import.meta.env.VITE_API_BASE ?? ''
 
 export class ApiError extends Error {
@@ -23,10 +21,41 @@ async function parseError(res: Response): Promise<never> {
   throw new ApiError(res.status, detail)
 }
 
+function getHeaders() {
+  const token = localStorage.getItem('mavrick_token');
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  return headers;
+}
+
+export async function loginUser(req: UserLogin): Promise<Token> {
+  const res = await fetch(`${BASE}/api/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(req),
+  })
+  if (!res.ok) return parseError(res)
+  return res.json()
+}
+
+export async function registerUser(req: UserRegister): Promise<UserResponse> {
+  const res = await fetch(`${BASE}/api/auth/register`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(req),
+  })
+  if (!res.ok) return parseError(res)
+  return res.json()
+}
+
 export async function getPlan(req: PlanRequest): Promise<PlanResponse> {
   const res = await fetch(`${BASE}/api/plan`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: getHeaders(),
     body: JSON.stringify(req),
   })
   if (!res.ok) return parseError(res)
@@ -36,7 +65,7 @@ export async function getPlan(req: PlanRequest): Promise<PlanResponse> {
 export async function getCoachMessage(req: CoachRequest): Promise<CoachResponse> {
   const res = await fetch(`${BASE}/api/coach`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: getHeaders(),
     body: JSON.stringify(req),
   })
   if (!res.ok) return parseError(res)

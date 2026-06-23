@@ -79,3 +79,25 @@ export interface CrisisHistory {
   steps_count: number
   completed_at: string
 }
+
+export interface UserRegister {
+  email: string
+  password: string
+  name: string
+}
+
+export interface UserLogin {
+  email: string
+  password: string
+}
+
+export interface Token {
+  access_token: string
+  token_type: string
+}
+
+export interface UserResponse {
+  id: string
+  email: string
+  name: string
+}

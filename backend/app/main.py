@@ -14,6 +14,9 @@ from .core.schemas import CoachRequest, CoachResponse, PlanRequest, PlanResponse
 from .gemini.key_manager import NoKeyAvailable
 from .logging_config import get_logger
 from .runtime import key_manager, settings
+from .core.db import init_db
+from .api import auth
+from fastapi import Depends
 
 log = get_logger("api")
 
@@ -27,6 +30,8 @@ async def lifespan(app: FastAPI):
         settings.daily_limit_per_key,
         settings.daily_budget,
     )
+    await init_db()
+    log.info("MongoDB connection initialized")
     yield
     log.info("Mavrick shutting down.")
 
@@ -39,6 +44,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 
 
 @app.get("/health")
@@ -53,8 +60,8 @@ def health() -> dict:
 
 
 @app.post("/api/plan", response_model=PlanResponse)
-def plan(req: PlanRequest) -> PlanResponse:
-    log.info("PANIC: %r (%d min left)", req.text[:60], req.minutes_left)
+def plan(req: PlanRequest, current_user: dict = Depends(auth.get_current_user)) -> PlanResponse:
+    log.info("PANIC from %s: %r (%d min left)", current_user['email'], req.text[:60], req.minutes_left)
     try:
         return make_plan(req)
     except NoKeyAvailable as err:
