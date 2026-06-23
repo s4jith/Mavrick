@@ -1,0 +1,43 @@
+/* Mavrick design tokens — Material 3 inspired, dark-first */
+:root {
+  /* Surfaces */
+  --bg: #0f1115;
+  --surface: #171a21;
+  --surface-2: #1f232c;
+  --surface-3: #272c37;
+  --border: #2a2f3a;
+
+  /* Text */
+  --text: #eef0f4;
+  --text-dim: #9aa3b2;
+  --text-faint: #6b7280;
+
+  /* Brand + accents */
+  --brand: #6d5efc;
+  --brand-press: #5a49e8;
+  --panic: #ff3b5c;
+  --panic-press: #e62e4d;
+  --now: #ffd166;
+
+  /* Urgency */
+  --red: #ff4d4f;
+  --amber: #ffb020;
+  --green: #34c759;
+  --red-soft: rgba(255, 77, 79, 0.14);
+  --amber-soft: rgba(255, 176, 32, 0.14);
+  --green-soft: rgba(52, 199, 89, 0.14);
+
+  /* Shape + motion */
+  --radius-sm: 10px;
+  --radius: 16px;
+  --radius-lg: 24px;
+  --shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  /* Layout */
+  --max-width: 560px;
+  --tap: 48px;
+
+  color-scheme: dark;
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}

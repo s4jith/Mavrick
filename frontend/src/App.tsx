@@ -1,121 +1,91 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
+import { useEffect, useState } from 'react'
 import './App.css'
+import { ApiError, getHealth, getPlan } from './api'
+import { Header } from './components/Header'
+import { PanicForm } from './components/PanicForm'
+import { PlanView } from './components/PlanView'
+import type { Health, PlanRequest, PlanResponse } from './types'
+
+type Status = 'idle' | 'loading' | 'done'
+
+const LOADING_LINES = [
+  'Reading your crisis…',
+  'Classifying the situation…',
+  'Doing the time math…',
+  'Building your step-by-step plan…',
+]
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [status, setStatus] = useState<Status>('idle')
+  const [resp, setResp] = useState<PlanResponse | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [health, setHealth] = useState<Health | null>(null)
+  const [loadingLine, setLoadingLine] = useState(LOADING_LINES[0])
+
+  const refreshHealth = () => {
+    getHealth()
+      .then(setHealth)
+      .catch(() => setHealth(null))
+  }
+
+  useEffect(refreshHealth, [])
+
+  useEffect(() => {
+    if (status !== 'loading') return
+    let i = 0
+    const id = setInterval(() => {
+      i = (i + 1) % LOADING_LINES.length
+      setLoadingLine(LOADING_LINES[i])
+    }, 1400)
+    return () => clearInterval(id)
+  }, [status])
+
+  async function handleSubmit(req: PlanRequest) {
+    setError(null)
+    setStatus('loading')
+    setLoadingLine(LOADING_LINES[0])
+    try {
+      const result = await getPlan(req)
+      setResp(result)
+      setStatus('done')
+      refreshHealth()
+    } catch (err) {
+      const msg =
+        err instanceof ApiError
+          ? err.message
+          : 'Could not reach Mavrick. Is the backend running on :8000?'
+      setError(msg)
+      setStatus('idle')
+    }
+  }
+
+  function reset() {
+    setResp(null)
+    setStatus('idle')
+    setError(null)
+    refreshHealth()
+  }
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <main className="app">
+      <Header health={health} />
 
-      <div className="ticks"></div>
+      {status === 'idle' && (
+        <PanicForm onSubmit={handleSubmit} loading={false} error={error} />
+      )}
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
+      {status === 'loading' && (
+        <div className="loading">
+          <div className="spinner" />
+          <p className="big">{loadingLine}</p>
+          <p>Mavrick is turning panic into a plan.</p>
         </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+      )}
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+      {status === 'done' && resp && <PlanView resp={resp} onReset={reset} />}
+
+      <div className="footer">Mavrick · built for Vibe2Ship</div>
+    </main>
   )
 }
 
