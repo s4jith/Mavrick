@@ -44,3 +44,24 @@ class PlanResponse(BaseModel):
     cached: bool
     key_index: int | None
     latency_ms: int
+    evaluator_score: int = 0
+    evaluator_notes: list[str] = []
+
+
+class CoachRequest(BaseModel):
+    """Request a coach check-in for an active plan."""
+
+    plan: Plan
+    current_step_index: int = Field(ge=0, description="0-based index of current step.")
+    steps_completed: int = Field(ge=0, description="Number of steps checked off.")
+    minutes_elapsed: int = Field(ge=0, description="Minutes since plan started.")
+    minutes_left: int = Field(gt=0, description="Original minutes_left.")
+
+
+class CoachResponse(BaseModel):
+    """Coach check-in message."""
+
+    message: str
+    tone: str
+    step_hint: str | None
+    progress_pct: int

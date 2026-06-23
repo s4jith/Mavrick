@@ -21,13 +21,15 @@ export interface Plan {
 export interface PlanResponse {
   plan: Plan
   urgency_score: number
-  urgency_colour: 'red' | 'amber' | 'green'
+  urgency_colour: 'red' | 'amber' | 'green' | 'orange'
   total_planned_minutes: number
   minutes_left: number
   fits: boolean
   cached: boolean
   key_index: number | null
   latency_ms: number
+  evaluator_score: number
+  evaluator_notes: string[]
 }
 
 export interface PlanRequest {
@@ -49,4 +51,31 @@ export interface Health {
   model: string
   calls_remaining_today: number
   keys: KeyStatus[]
+}
+
+export interface CoachRequest {
+  plan: Plan
+  current_step_index: number
+  steps_completed: number
+  minutes_elapsed: number
+  minutes_left: number
+}
+
+export interface CoachResponse {
+  message: string
+  tone: string
+  step_hint: string | null
+  progress_pct: number
+}
+
+export interface CrisisHistory {
+  id: string
+  text: string
+  cluster: string
+  sub_type: string
+  severity: string
+  urgency_score: number
+  evaluator_score: number
+  steps_count: number
+  completed_at: string
 }

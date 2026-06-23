@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
 import './App.css'
-import { ApiError, getHealth, getPlan } from './api'
+import { ApiError, getPlan } from './api'
+import { getHealth } from './api'
 import { Header } from './components/Header'
+import { HistoryPanel, saveToHistory } from './components/HistoryPanel'
 import { PanicForm } from './components/PanicForm'
 import { PlanView } from './components/PlanView'
 import type { Health, PlanRequest, PlanResponse } from './types'
@@ -13,6 +15,7 @@ const LOADING_LINES = [
   'Classifying the situation…',
   'Doing the time math…',
   'Building your step-by-step plan…',
+  'Running the evaluator…',
 ]
 
 function App() {
@@ -21,6 +24,7 @@ function App() {
   const [error, setError] = useState<string | null>(null)
   const [health, setHealth] = useState<Health | null>(null)
   const [loadingLine, setLoadingLine] = useState(LOADING_LINES[0])
+  const [showHistory, setShowHistory] = useState(false)
 
   const refreshHealth = () => {
     getHealth()
@@ -36,7 +40,7 @@ function App() {
     const id = setInterval(() => {
       i = (i + 1) % LOADING_LINES.length
       setLoadingLine(LOADING_LINES[i])
-    }, 1400)
+    }, 1200)
     return () => clearInterval(id)
   }, [status])
 
@@ -49,6 +53,19 @@ function App() {
       setResp(result)
       setStatus('done')
       refreshHealth()
+
+      // Save to history
+      saveToHistory({
+        id: Date.now().toString(36),
+        text: req.text,
+        cluster: result.plan.cluster,
+        sub_type: result.plan.sub_type,
+        severity: result.plan.severity,
+        urgency_score: result.urgency_score,
+        evaluator_score: result.evaluator_score,
+        steps_count: result.plan.steps.length,
+        completed_at: new Date().toISOString(),
+      })
     } catch (err) {
       const msg =
         err instanceof ApiError
@@ -68,7 +85,7 @@ function App() {
 
   return (
     <main className="app">
-      <Header health={health} />
+      <Header health={health} onHistoryClick={() => setShowHistory(true)} />
 
       {status === 'idle' && (
         <PanicForm onSubmit={handleSubmit} loading={false} error={error} />
@@ -84,7 +101,11 @@ function App() {
 
       {status === 'done' && resp && <PlanView resp={resp} onReset={reset} />}
 
-      <div className="footer">Mavrick · built for Vibe2Ship</div>
+      <div className="footer">
+        Mavrick · AI Execution Engine · Built for Vibe2Ship
+      </div>
+
+      {showHistory && <HistoryPanel onClose={() => setShowHistory(false)} />}
     </main>
   )
 }

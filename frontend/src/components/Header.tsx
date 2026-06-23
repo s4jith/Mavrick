@@ -1,6 +1,11 @@
 import type { Health } from '../types'
 
-export function Header({ health }: { health: Health | null }) {
+interface Props {
+  health: Health | null
+  onHistoryClick: () => void
+}
+
+export function Header({ health, onHistoryClick }: Props) {
   const remaining = health?.calls_remaining_today
   const dotClass =
     remaining === undefined ? '' : remaining === 0 ? 'empty' : remaining <= 10 ? 'low' : ''
@@ -14,12 +19,21 @@ export function Header({ health }: { health: Health | null }) {
           <div className="brand-tag">Panic to plan, in seconds</div>
         </div>
       </div>
-      {health && (
-        <div className="budget-pill" title="Gemini calls left across all keys today">
-          <span className={`budget-dot ${dotClass}`} />
-          {remaining} calls left
-        </div>
-      )}
+      <div className="header-actions">
+        <button
+          className="history-btn"
+          onClick={onHistoryClick}
+          title="View crisis history"
+        >
+          🏆
+        </button>
+        {health && (
+          <div className="budget-pill" title="Gemini calls left across all keys today">
+            <span className={`budget-dot ${dotClass}`} />
+            {remaining} calls left
+          </div>
+        )}
+      </div>
     </header>
   )
 }

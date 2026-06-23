@@ -1,4 +1,4 @@
-import type { Health, PlanRequest, PlanResponse } from './types'
+import type { CoachRequest, CoachResponse, Health, PlanRequest, PlanResponse } from './types'
 
 // In dev, Vite proxies /api and /health to the FastAPI backend.
 // In prod, set VITE_API_BASE to the deployed backend origin.
@@ -25,6 +25,16 @@ async function parseError(res: Response): Promise<never> {
 
 export async function getPlan(req: PlanRequest): Promise<PlanResponse> {
   const res = await fetch(`${BASE}/api/plan`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(req),
+  })
+  if (!res.ok) return parseError(res)
+  return res.json()
+}
+
+export async function getCoachMessage(req: CoachRequest): Promise<CoachResponse> {
+  const res = await fetch(`${BASE}/api/coach`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(req),

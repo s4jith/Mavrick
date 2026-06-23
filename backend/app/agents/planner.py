@@ -13,6 +13,7 @@ from ..core.schemas import Plan, PlanRequest, PlanResponse
 from ..core.urgency import compute_urgency, urgency_colour
 from ..logging_config import get_logger
 from ..runtime import gemini
+from .evaluator import evaluate_plan
 
 log = get_logger("planner")
 
@@ -68,6 +69,10 @@ def make_plan(req: PlanRequest) -> PlanResponse:
             "Plan overruns: %d planned vs %d available", planned, req.minutes_left
         )
 
+    # Run rule-based evaluator
+    eval_score, eval_notes = evaluate_plan(plan, req.minutes_left)
+    log.info("Evaluator score: %d/100 (%d notes)", eval_score, len(eval_notes))
+
     return PlanResponse(
         plan=plan,
         urgency_score=score,
@@ -78,4 +83,6 @@ def make_plan(req: PlanRequest) -> PlanResponse:
         cached=meta.cached,
         key_index=meta.key_index,
         latency_ms=meta.latency_ms,
+        evaluator_score=eval_score,
+        evaluator_notes=eval_notes,
     )

@@ -1,9 +1,14 @@
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import type { Step } from '../types'
 
 const BREAK_HINT = /break|rest|breathe|pause/i
 
-export function StepCard({ step }: { step: Step }) {
+interface Props {
+  step: Step
+  onToggle: (order: number, done: boolean) => void
+}
+
+export function StepCard({ step, onToggle }: Props) {
   const [done, setDone] = useState(false)
   const isBreak = BREAK_HINT.test(step.title)
   const cls = [
@@ -15,15 +20,47 @@ export function StepCard({ step }: { step: Step }) {
     .filter(Boolean)
     .join(' ')
 
+  const toggle = () => {
+    const next = !done
+    setDone(next)
+    onToggle(step.order, next)
+  }
+
+  const speak = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation()
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel()
+        const utterance = new SpeechSynthesisUtterance(
+          `Step ${step.order}. ${step.title}. ${step.detail}`
+        )
+        utterance.rate = 1.0
+        utterance.pitch = 1.0
+        window.speechSynthesis.speak(utterance)
+      }
+    },
+    [step]
+  )
+
   return (
-    <div className={cls} onClick={() => setDone((d) => !d)} role="button" tabIndex={0}>
+    <div className={cls} onClick={toggle} role="button" tabIndex={0}>
       <div className="step-check">✓</div>
       <div className="step-body">
         <div className="step-title-row">
           <span className="step-title">
             {step.order}. {step.title}
           </span>
-          <span className="step-mins">{step.minutes}m</span>
+          <div className="step-actions">
+            <button
+              className="speak-btn"
+              onClick={speak}
+              title="Read aloud"
+              aria-label={`Read step ${step.order} aloud`}
+            >
+              🔊
+            </button>
+            <span className="step-mins">{step.minutes}m</span>
+          </div>
         </div>
         <p className="step-detail">{step.detail}</p>
       </div>

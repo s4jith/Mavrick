@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { PlanRequest } from '../types'
+import { VoiceButton } from './VoiceButton'
 
 const QUICK_TIMES = [
   { label: '30 min', value: 30 },
@@ -37,6 +38,14 @@ export function PanicForm({ onSubmit, loading, error }: Props) {
     })
   }
 
+  function handleVoiceTranscript(transcript: string) {
+    setText((prev) => (prev ? prev + ' ' + transcript : transcript))
+  }
+
+  function useExample(idx: number) {
+    setText(EXAMPLES[idx])
+  }
+
   return (
     <section className="hero">
       <h1>What's your crisis?</h1>
@@ -47,16 +56,28 @@ export function PanicForm({ onSubmit, loading, error }: Props) {
 
       <div className="field">
         <label htmlFor="crisis">Your situation</label>
-        <textarea
-          id="crisis"
-          className="crisis-input"
-          placeholder={EXAMPLES[0]}
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) submit()
-          }}
-        />
+        <div className="input-row">
+          <textarea
+            id="crisis"
+            className="crisis-input"
+            placeholder={EXAMPLES[0]}
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) submit()
+            }}
+          />
+          <VoiceButton onTranscript={handleVoiceTranscript} disabled={loading} />
+        </div>
+      </div>
+
+      <div className="examples">
+        <span className="examples-label">Try:</span>
+        {EXAMPLES.map((ex, i) => (
+          <button key={i} className="example-chip" onClick={() => useExample(i)}>
+            {ex.slice(0, 40)}…
+          </button>
+        ))}
       </div>
 
       <div className="row">
