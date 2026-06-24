@@ -1,105 +1,110 @@
-/* Mavrick — PIXEL ART Design System */
+/* Mavrick — PIXEL ART Design System · Light Theme
+   Palette: Hot Pink #f72585 → Purple #7209b7 → Cyan #4cc9f0
+   ──────────────────────────────────────────────────────── */
 :root {
-  /* ── Background palette ── */
-  --bg-primary: #0e0b1f;
-  --bg-secondary: #1a1535;
-  --bg-tertiary: #221e44;
-  --bg-card: #1c1838;
+  /* ── The 10-color gradient palette ── */
+  --px-pink:    #f72585;
+  --px-magenta: #b5179e;
+  --px-purple:  #7209b7;
+  --px-indigo:  #560bad;
+  --px-deep:    #480ca8;
+  --px-navy:    #3a0ca3;
+  --px-royal:   #3f37c9;
+  --px-blue:    #4361ee;
+  --px-sky:     #4895ef;
+  --px-cyan:    #4cc9f0;
 
-  /* ── Pixel art color palette ── */
-  --px-blue: #5bc8f5;
-  --px-blue-border: #2a78b0;
-  --px-blue-shadow: #165280;
+  /* ── Backgrounds (light) ── */
+  --bg-primary:  #f8f9ff;
+  --bg-surface:  #ffffff;
+  --bg-elevated: #eff0ff;
+  --bg-card:     #ffffff;
 
-  --px-pink: #f0507a;
-  --px-pink-border: #a02050;
-  --px-pink-shadow: #680c30;
+  /* ── Sidebar stays dark ── */
+  --sidebar-bg:     #10002b;
+  --sidebar-border: rgba(247, 37, 133, 0.18);
+  --sidebar-text:   rgba(255, 255, 255, 0.72);
+  --sidebar-active: rgba(247, 37, 133, 0.18);
+  --sidebar-w:      240px;
 
-  --px-purple: #a855f7;
-  --px-purple-border: #6820b8;
-  --px-purple-shadow: #3e0880;
+  /* ── Text (dark on light bg) ── */
+  --text-primary:   #1a0030;
+  --text-secondary: #480ca8;
+  --text-tertiary:  #8080aa;
+  --text-inverse:   #f8f9ff;
 
-  --px-orange: #f9a825;
-  --px-orange-border: #c47000;
-  --px-orange-shadow: #7a4000;
+  /* ── Semantic ── */
+  --accent:       #7209b7;
+  --accent-light: #b5179e;
+  --accent-soft:  rgba(114, 9, 183, 0.10);
+  --accent-glow:  rgba(114, 9, 183, 0.25);
 
-  --px-green: #4ade80;
-  --px-green-border: #16803a;
-  --px-green-shadow: #0a4020;
+  --danger:       #f72585;
+  --danger-soft:  rgba(247, 37, 133, 0.10);
+  --danger-glow:  rgba(247, 37, 133, 0.25);
 
-  /* ── Text ── */
-  --text-primary: #f0f2f8;
-  --text-secondary: #9ba8cc;
-  --text-tertiary: #5a6490;
-  --text-inverse: #0e0b1f;
+  --success:      #4cc9f0;
+  --success-soft: rgba(76, 201, 240, 0.12);
+  --success-glow: rgba(76, 201, 240, 0.28);
 
-  /* ── Semantic (mapped from pixel palette) ── */
-  --accent: #a855f7;
-  --accent-light: #c084fc;
-  --accent-soft: rgba(168, 85, 247, 0.15);
-  --accent-glow: rgba(168, 85, 247, 0.3);
+  --warning:      #b5179e;
+  --warning-soft: rgba(181, 23, 158, 0.10);
 
-  --danger: #f0507a;
-  --danger-soft: rgba(240, 80, 122, 0.15);
-  --danger-glow: rgba(240, 80, 122, 0.3);
+  --info:         #4895ef;
+  --info-soft:    rgba(72, 149, 239, 0.10);
 
-  --success: #4ade80;
-  --success-soft: rgba(74, 222, 128, 0.12);
-  --success-glow: rgba(74, 222, 128, 0.25);
-
-  --warning: #f9a825;
-  --warning-soft: rgba(249, 168, 37, 0.12);
-  --warning-glow: rgba(249, 168, 37, 0.25);
-
-  --info: #5bc8f5;
-  --info-soft: rgba(91, 200, 245, 0.12);
-
-  /* ── Legacy glass vars (used in inline styles) ── */
-  --glass: rgba(28, 24, 56, 0.85);
-  --glass-border: rgba(255, 255, 255, 0.08);
-  --glass-hover: rgba(35, 30, 70, 0.9);
-  --glass-strong: rgba(26, 21, 53, 0.95);
-
-  /* ── Surface var for SVG arcs ── */
-  --surface-3: rgba(255, 255, 255, 0.08);
+  /* ── Borders ── */
+  --border:        rgba(114, 9, 183, 0.14);
+  --border-strong: rgba(114, 9, 183, 0.32);
 
   /* ── Gradients ── */
-  --gradient-brand: linear-gradient(135deg, #a855f7 0%, #5bc8f5 100%);
-  --gradient-danger: linear-gradient(135deg, #f0507a 0%, #f9a825 100%);
-  --gradient-warm: linear-gradient(135deg, #f9a825 0%, #fbbf24 100%);
-  --gradient-aurora: linear-gradient(135deg, #a855f7 0%, #5bc8f5 50%, #f0507a 100%);
+  --gradient-brand:  linear-gradient(135deg, #f72585 0%, #7209b7 50%, #4cc9f0 100%);
+  --gradient-cta:    linear-gradient(135deg, #f72585, #7209b7);
+  --gradient-cool:   linear-gradient(135deg, #4361ee, #4cc9f0);
+  --gradient-warm:   linear-gradient(135deg, #f72585, #b5179e);
+  --gradient-aurora: linear-gradient(135deg, #f72585 0%, #7209b7 40%, #4cc9f0 100%);
   --gradient-mesh:
-    radial-gradient(at 20% 20%, rgba(168, 85, 247, 0.1) 0%, transparent 50%),
-    radial-gradient(at 80% 80%, rgba(91, 200, 245, 0.07) 0%, transparent 50%);
+    radial-gradient(at 20% 20%, rgba(247, 37, 133, 0.07) 0%, transparent 50%),
+    radial-gradient(at 80% 80%, rgba(76, 201, 240, 0.05) 0%, transparent 50%);
+
+  /* ── Legacy glass (light) ── */
+  --glass:        rgba(255, 255, 255, 0.90);
+  --glass-border: rgba(114, 9, 183, 0.12);
+  --glass-hover:  rgba(255, 255, 255, 0.95);
+  --glass-strong: rgba(255, 255, 255, 0.98);
+
+  /* ── SVG surface fill (icon negative space) ── */
+  --surface-3:    rgba(114, 9, 183, 0.06);
 
   /* ── Shape ── */
-  --radius-xs: 6px;
-  --radius-sm: 10px;
-  --radius-md: 14px;
-  --radius-lg: 18px;
-  --radius-xl: 22px;
+  --radius-xs:   6px;
+  --radius-sm:   10px;
+  --radius-md:   14px;
+  --radius-lg:   18px;
+  --radius-xl:   22px;
   --radius-full: 9999px;
 
-  /* ── Shadows ── */
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.5);
-  --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.6);
-  --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.7);
-  --shadow-glow-accent: 0 0 20px rgba(168, 85, 247, 0.35);
-  --shadow-glow-danger: 0 0 20px rgba(240, 80, 122, 0.35);
+  /* ── Shadows (purple-tinted for light theme) ── */
+  --shadow-sm:          0 2px 8px rgba(114, 9, 183, 0.08);
+  --shadow-md:          0 4px 20px rgba(114, 9, 183, 0.12);
+  --shadow-lg:          0 8px 40px rgba(114, 9, 183, 0.18);
+  --shadow-bevel-pink:  0 5px 0 #7209b7;
+  --shadow-bevel-purp:  0 5px 0 #3a0ca3;
+  --shadow-bevel-blue:  0 5px 0 #3a0ca3;
 
-  /* ── Motion (snappier for pixel feel) ── */
-  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  /* ── Motion ── */
+  --ease-out:    cubic-bezier(0.16, 1, 0.3, 1);
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
   --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
-  --duration-fast: 80ms;
+  --duration-fast:   80ms;
   --duration-normal: 180ms;
-  --duration-slow: 350ms;
+  --duration-slow:   350ms;
 
   /* ── Layout ── */
-  --max-width: 600px;
+  --max-width:  640px;
   --tap-target: 48px;
 
   /* ── Typography ── */
-  color-scheme: dark;
+  color-scheme: light;
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }

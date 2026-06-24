@@ -387,3 +387,46 @@ export const PlusIcon = ic('0 0 16 16', <>
   <rect x="0" y="6" width="16" height="4" />
   <rect x="6" y="10" width="4" height="6" />
 </>)
+
+/* ─── Gear / Settings ────────────────────── */
+export const GearIcon = ic('0 0 16 16', <>
+  {/* Top/bottom teeth */}
+  <rect x="6" y="0" width="4" height="2" />
+  <rect x="6" y="14" width="4" height="2" />
+  {/* Left/right teeth */}
+  <rect x="0" y="6" width="2" height="4" />
+  <rect x="14" y="6" width="2" height="4" />
+  {/* Diagonal teeth */}
+  <rect x="2" y="2" width="2" height="2" />
+  <rect x="12" y="2" width="2" height="2" />
+  <rect x="2" y="12" width="2" height="2" />
+  <rect x="12" y="12" width="2" height="2" />
+  {/* Outer ring */}
+  <rect x="4" y="2" width="8" height="2" />
+  <rect x="4" y="12" width="8" height="2" />
+  <rect x="2" y="4" width="2" height="8" />
+  <rect x="12" y="4" width="2" height="8" />
+  {/* Inner ring fill */}
+  <rect x="4" y="4" width="8" height="8" />
+  {/* Center hole */}
+  <rect x="5" y="5" width="6" height="6" fill="var(--bg-primary)" />
+  <rect x="6" y="6" width="4" height="4" fill="var(--bg-primary)" />
+</>)
+
+/* ─── Bell / Reminder ────────────────────── */
+export const BellIcon = ic('0 0 16 16', <>
+  {/* Top knob */}
+  <rect x="7" y="0" width="2" height="2" />
+  {/* Bell curve top */}
+  <rect x="4" y="2" width="8" height="1" />
+  <rect x="3" y="3" width="10" height="1" />
+  {/* Bell body */}
+  <rect x="2" y="4" width="12" height="7" />
+  <rect x="1" y="5" width="1" height="5" />
+  <rect x="14" y="5" width="1" height="5" />
+  {/* Bell bottom flare */}
+  <rect x="0" y="10" width="16" height="2" />
+  {/* Clapper */}
+  <rect x="6" y="13" width="4" height="2" />
+  <rect x="7" y="15" width="2" height="1" />
+</>)
