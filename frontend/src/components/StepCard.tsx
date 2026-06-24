@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react'
 import type { Step } from '../types'
+import { CheckIcon, SpeakerIcon } from './icons/PixelIcons'
 
 const BREAK_HINT = /break|rest|breathe|pause/i
 
@@ -44,7 +45,7 @@ export function StepCard({ step, onToggle }: Props) {
 
   return (
     <div className={cls} onClick={toggle} role="button" tabIndex={0}>
-      <div className="step-check">✓</div>
+      <div className="step-check"><CheckIcon size={14} /></div>
       <div className="step-body">
         <div className="step-title-row">
           <span className="step-title">
@@ -57,7 +58,7 @@ export function StepCard({ step, onToggle }: Props) {
               title="Read aloud"
               aria-label={`Read step ${step.order} aloud`}
             >
-              🔊
+              <SpeakerIcon size={14} />
             </button>
             <span className="step-mins">{step.minutes}m</span>
           </div>

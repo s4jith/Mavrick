@@ -101,3 +101,21 @@ export interface UserResponse {
   email: string
   name: string
 }
+
+// ── Admin types ─────────────────────────────────────────────────
+
+export interface AdminUser {
+  id: string
+  email: string
+  name: string
+  created_at: string | null
+}
+
+export interface AdminStats {
+  total_users: number
+  cache_entries: number
+  api_keys_total: number
+  calls_used_today: number
+  calls_remaining_today: number
+  keys: KeyStatus[]
+}

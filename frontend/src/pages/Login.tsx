@@ -38,10 +38,10 @@ export function Login() {
         className="glass-card"
         style={{ width: '100%', maxWidth: 400, padding: 40 }}
       >
-        <div style={{ textAlign: 'center', marginBottom: 32 }}>
-          <div className="brand-mark" style={{ margin: '0 auto 16px' }}>M</div>
-          <h2 style={{ margin: 0, fontSize: 24, fontWeight: 800 }}>Welcome back</h2>
-          <p style={{ color: 'var(--text-secondary)', margin: '8px 0 0', fontSize: 14 }}>Enter your details to access your plans.</p>
+        <div style={{ textAlign: 'center', marginBottom: 28 }}>
+          <div className="brand-mark" style={{ margin: '0 auto 18px' }}>M</div>
+          <h2 style={{ margin: 0, fontSize: 14, fontWeight: 400, fontFamily: "'Press Start 2P', cursive", letterSpacing: '0.04em', lineHeight: 1.5 }}>WELCOME BACK</h2>
+          <p style={{ color: 'var(--text-secondary)', margin: '10px 0 0', fontSize: 13 }}>Enter your details to access your plans.</p>
         </div>
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>

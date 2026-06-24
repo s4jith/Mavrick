@@ -27,12 +27,13 @@ structured-output request. Urgency scoring and time-block math are pure Python
 
 | Layer | Technology |
 |---|---|
-| Frontend | React 19 + TypeScript + Vite 8 · installable PWA · Material 3 tokens |
+| Frontend | React 19 + TypeScript + Vite 8 · installable PWA · pixel art UI |
+| Auth | JWT (jose) + bcrypt · MongoDB user store (Motor async driver) |
 | Backend | FastAPI (Python 3.10+) |
 | AI | Gemini 2.5 Flash — 1 structured call per crisis (classify + plan) |
-| Key management | Round-robin across N keys · daily cap · 429 cooldown · TTL plan cache |
-| Database | Firestore (Firebase) — planned |
-| Cache | Redis via Upstash — planned (in-memory TTL cache used today) |
+| Key management | Round-robin across N keys · daily cap · 429 cooldown |
+| Cache | SQLite TTL cache at `backend/data/cache.db` · survives restarts |
+| Database | MongoDB (Motor) — users, auth tokens |
 
 ---
 
@@ -41,43 +42,61 @@ structured-output request. Urgency scoring and time-block math are pure Python
 ```
 Mavrick/
 ├── backend/
-│   ├── .env                   # your Gemini keys (gitignored)
-│   ├── .env.example           # template to copy
+│   ├── .env                    # Gemini keys + JWT secret (gitignored)
+│   ├── .env.example
 │   ├── requirements.txt
 │   └── app/
-│       ├── main.py            # FastAPI entry — /health + /api/plan
-│       ├── config.py          # settings loaded from .env
-│       ├── runtime.py         # shared singletons (cache, key manager, gemini client)
-│       ├── logging_config.py  # clean colour console logging
+│       ├── main.py             # FastAPI entry — mounts all routers
+│       ├── config.py           # settings from .env
+│       ├── runtime.py          # shared singletons (cache, key manager)
 │       ├── gemini/
-│       │   ├── key_manager.py # round-robin, daily cap, 429 cooldown, daily reset
-│       │   └── client.py      # cache → acquire key → call → retry on 5xx/429
+│       │   ├── key_manager.py  # round-robin, daily cap, 429 cooldown
+│       │   └── client.py       # cache → key → call → retry
 │       ├── agents/
-│       │   └── planner.py     # 1 Gemini call: classify crisis + build time-blocked plan
+│       │   ├── planner.py      # 1 Gemini call: classify + plan
+│       │   └── fallback.py     # generic triage plan when keys exhausted
+│       ├── api/
+│       │   ├── auth.py         # POST /api/auth/register + /login
+│       │   └── admin.py        # GET/DELETE /api/admin/* (admin-only)
 │       ├── core/
-│       │   ├── schemas.py     # Pydantic models (request, plan steps, response)
-│       │   ├── clusters.py    # 8 crisis clusters + consequence weights
-│       │   └── urgency.py     # pure-Python urgency score (0–100)
+│       │   ├── schemas.py      # Pydantic models
+│       │   ├── clusters.py     # 8 crisis clusters + weights
+│       │   └── urgency.py      # pure-Python urgency score (0–100)
 │       └── store/
-│           └── cache.py       # thread-safe TTL cache (Redis-compatible interface)
+│           └── cache.py        # SQLite TTL cache (swap to Redis later)
 ├── frontend/
 │   ├── index.html
-│   ├── vite.config.ts         # dev proxy → backend :8000; PWA manifest
+│   ├── vite.config.ts          # dev proxy → :8000; PWA manifest
 │   └── src/
-│       ├── App.tsx            # state machine: idle → loading → done
-│       ├── api.ts             # fetch wrapper for /api/plan and /health
-│       ├── types.ts           # TypeScript types mirroring backend schemas
+│       ├── App.tsx             # routes + AdminGuard
+│       ├── api.ts              # fetch wrappers for all endpoints
+│       ├── types.ts            # TypeScript types mirroring backend
+│       ├── context/
+│       │   └── AuthContext.tsx # JWT auth state + isAdmin flag
+│       ├── pages/
+│       │   ├── Landing.tsx     # pixel art hero + CTAs
+│       │   ├── Login.tsx       # email/password login
+│       │   ├── Register.tsx    # sign up
+│       │   ├── Dashboard.tsx   # main app (crisis input → plan)
+│       │   └── Admin.tsx       # admin panel (users, API budget, health)
 │       ├── components/
-│       │   ├── Header.tsx     # brand + live key-budget pill
-│       │   ├── PanicForm.tsx  # crisis input, minutes left, quick-time chips
-│       │   ├── PlanView.tsx   # urgency badge, NOW card, budget bar, step list
-│       │   └── StepCard.tsx   # checkable step with break detection
+│       │   ├── Navbar.tsx      # fixed full-width nav with budget pill
+│       │   ├── PanicForm.tsx   # crisis input, minutes, quick chips
+│       │   ├── PlanView.tsx    # urgency badge, NOW card, step list
+│       │   ├── StepCard.tsx    # checkable step card
+│       │   ├── StressMeter.tsx # progress gauge
+│       │   ├── TimeWarp.tsx    # coach / time simulation
+│       │   ├── HistoryPanel.tsx# past crises drawer
+│       │   ├── VoiceButton.tsx # Web Speech API input
+│       │   ├── PixelAvatar.tsx # pixel art characters (panicked / calm)
+│       │   └── icons/
+│       │       └── PixelIcons.tsx # 25+ SVG pixel-art icons
 │       └── styles/
-│           └── tokens.css     # design tokens (colours, radii, motion)
+│           └── tokens.css      # design tokens (pixel palette, motion)
 ├── my-reference/
-│   ├── WORKFLOW.md            # what the product does (user journey)
-│   └── ARCHITECTURE.md       # how it's built (agents, stack, decisions)
-├── CLAUDE.md                  # working guide for developers + Claude Code
+│   ├── WORKFLOW.md
+│   └── ARCHITECTURE.md
+├── CLAUDE.md
 └── README.md
 ```
 
@@ -87,13 +106,14 @@ Mavrick/
 
 - Python 3.10+
 - Node.js 18+
-- At least one [Gemini API key](https://aistudio.google.com/apikey) (free tier works)
+- MongoDB (local or Atlas free tier)
+- At least one [Gemini API key](https://aistudio.google.com/apikey) (free tier)
 
 ---
 
 ## Setup
 
-### 1. Configure API keys
+### 1. Configure environment
 
 ```bash
 cp backend/.env.example backend/.env
@@ -104,11 +124,17 @@ Edit `backend/.env`:
 ```env
 GEMINI_API_KEY_1="your-key-here"
 GEMINI_API_KEY_2="optional-second-key"
-# Add up to N keys — each gets its own 20 calls/day budget
-```
 
-The key manager round-robins across all configured keys. More keys = more daily
-capacity. Never commit `.env`.
+# MongoDB
+MONGODB_URL="mongodb://localhost:27017"
+MONGODB_DB="mavrick"
+
+# JWT — change this to a long random string in production
+JWT_SECRET="change-me-in-production-use-openssl-rand-hex-32"
+
+# Admin — comma-separated emails that get admin access
+ADMIN_EMAILS="yourname@example.com"
+```
 
 ### 2. Backend
 
@@ -121,8 +147,13 @@ uvicorn app.main:app --reload
 Runs on **http://localhost:8000**
 
 ```
-GET  /health      →  key budget, usage per key, model
-POST /api/plan    →  { text, minutes_left, age? }  →  full plan response
+GET  /health                  →  key budget, usage per key, model
+POST /api/auth/register       →  { email, password, name }
+POST /api/auth/login          →  { email, password } → JWT token
+POST /api/plan                →  { text, minutes_left, age? } → plan (auth required)
+GET  /api/admin/users         →  list all users (admin only)
+DELETE /api/admin/users/{id}  →  delete user (admin only)
+GET  /api/admin/stats         →  usage stats + cache size (admin only)
 ```
 
 ### 3. Frontend
@@ -134,7 +165,21 @@ npm run dev
 ```
 
 Runs on **http://localhost:5173** — Vite proxies `/api` and `/health` to the
-backend automatically. No CORS config needed in dev.
+backend automatically.
+
+---
+
+## Admin panel
+
+Navigate to `/admin` while logged in with an email listed in `ADMIN_EMAILS`.
+The admin panel is guarded server-side (403 if not admin) and client-side
+(redirects to `/app` if `isAdmin` is false).
+
+Admin features:
+- **Users** — list all users, search, delete accounts
+- **API Budget** — per-key usage bars, cooling status, total remaining calls
+- **System Health** — live status of backend, model, keys, cache
+- **Cache** — SQLite cache size and TTL info
 
 ---
 
@@ -145,9 +190,9 @@ backend automatically. No CORS config needed in dev.
 **Request**
 ```json
 {
-  "text": "I have a client presentation in 90 minutes and I haven't prepared",
+  "text": "Client presentation in 90 minutes, haven't prepared a single slide",
   "minutes_left": 90,
-  "age": 45
+  "age": 30
 }
 ```
 
@@ -160,11 +205,10 @@ backend automatically. No CORS config needed in dev.
     "severity": "critical",
     "summary": "...",
     "steps": [
-      { "order": 1, "title": "Open your slides", "detail": "...", "minutes": 3, "is_right_now": true },
-      ...
+      { "order": 1, "title": "Open your slides", "detail": "...", "minutes": 3, "is_right_now": true }
     ],
-    "first_action": "Open your presentation software and a blank template.",
-    "warnings": ["This presentation will be basic. Focus on clarity..."]
+    "first_action": "Open your presentation software right now.",
+    "warnings": ["This will be basic — focus on clarity over polish."]
   },
   "urgency_score": 80,
   "urgency_colour": "red",
@@ -173,12 +217,11 @@ backend automatically. No CORS config needed in dev.
   "fits": true,
   "cached": false,
   "key_index": 1,
-  "latency_ms": 9999
+  "latency_ms": 1240
 }
 ```
 
-Repeated requests with the same crisis return `cached: true` and spend **zero**
-API calls.
+Repeated requests with the same crisis return `cached: true` and cost **zero** Gemini calls.
 
 ---
 
@@ -199,13 +242,15 @@ API calls.
 
 ## Current status
 
-- [x] Backend — FastAPI, Gemini key manager, round-robin, plan cache
+- [x] Backend — FastAPI, Gemini key manager, round-robin, fallback mode
+- [x] Auth — JWT register/login, bcrypt passwords, MongoDB user store
 - [x] Spine — `POST /api/plan` classifies + plans in one Gemini call
-- [x] Verified live — real plans returned; cache works; 5xx auto-retry
-- [x] Frontend — React PWA, Panic Mode, urgency UI, checkable steps
-- [ ] Persistence — Firestore (plans, user history)
-- [ ] Cache — Redis via Upstash (replace in-memory TTL store)
-- [ ] Voice input — Web Speech API in-browser
-- [ ] Coach — check-in messages + TTS voice output
+- [x] Verified live — real plans returned; cache returns 0-call repeats
+- [x] Frontend — React PWA, pixel art UI, full-width navbar, mobile-responsive
+- [x] Admin panel — user management, API budget viz, health checks
+- [x] Plan cache — SQLite persists across backend restarts (24h TTL)
+- [x] Degraded mode — generic triage plan when all API keys exhausted
+- [ ] Firestore persistence (plan history, user memory)
+- [ ] Voice output — TTS coach check-ins
 - [ ] Gmail scan — surface deadlines from inbox
 - [ ] Calendar write — HITL approval before any write

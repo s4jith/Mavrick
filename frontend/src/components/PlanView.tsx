@@ -3,6 +3,7 @@ import type { CoachResponse, PlanResponse } from '../types'
 import { StepCard } from './StepCard'
 import { StressMeter } from './StressMeter'
 import { TimeWarp } from './TimeWarp'
+import { SpeakerIcon, WarningIcon, FlaskIcon, PlayIcon } from './icons/PixelIcons'
 
 interface Props {
   resp: PlanResponse
@@ -59,19 +60,19 @@ export function PlanView({ resp, onReset }: Props) {
               ● {resp.urgency_score}/100
             </span>
             <span className="eval-badge">
-              🧪 {resp.evaluator_score}/100
+              <FlaskIcon size={12} /> {resp.evaluator_score}/100
             </span>
           </div>
         </div>
         <p className="summary">{plan.summary}</p>
         <button className="speak-plan-btn" onClick={speakPlan} title="Read entire plan aloud">
-          🔊 Read Plan Aloud
+          <SpeakerIcon size={14} /> Read Plan Aloud
         </button>
       </div>
 
       {/* NOW card */}
       <div className="now-card">
-        <span className="label">▶ Do this right now</span>
+        <span className="label"><PlayIcon size={12} /> Do this right now</span>
         <p className="action">{plan.first_action}</p>
       </div>
 
@@ -101,7 +102,7 @@ export function PlanView({ resp, onReset }: Props) {
       {/* Evaluator Notes */}
       {resp.evaluator_notes.length > 0 && (
         <div className="eval-notes">
-          <h4>🧪 Evaluator Notes</h4>
+          <h4><FlaskIcon size={14} /> Evaluator Notes</h4>
           <ul>
             {resp.evaluator_notes.map((n, i) => (
               <li key={i}>{n}</li>
@@ -113,7 +114,7 @@ export function PlanView({ resp, onReset }: Props) {
       {/* Warnings */}
       {plan.warnings.length > 0 && (
         <div className="warnings">
-          <h4>⚠ Honest heads-up</h4>
+          <h4><WarningIcon size={14} /> Honest heads-up</h4>
           <ul>
             {plan.warnings.map((w, i) => (
               <li key={i}>{w}</li>
@@ -133,7 +134,7 @@ export function PlanView({ resp, onReset }: Props) {
       {/* Coach Messages */}
       {coachMessages.length > 0 && (
         <div className="coach-feed">
-          <div className="section-title">🏃 Coach Check-ins</div>
+          <div className="section-title">Coach Check-ins</div>
           {coachMessages.map((msg, i) => (
             <div key={i} className={`coach-msg tone-${msg.tone}`}>
               <span className="coach-bubble">{msg.message}</span>
@@ -145,7 +146,7 @@ export function PlanView({ resp, onReset }: Props) {
 
       {/* Meta */}
       <div className="meta">
-        <span>{resp.cached ? '⚡ cached (0 calls)' : `via key #${resp.key_index}`}</span>
+        <span>{resp.cached ? 'cached (0 calls)' : `via key #${resp.key_index}`}</span>
         {!resp.cached && <span>{resp.latency_ms} ms</span>}
         {resp.cached && <span className="cached">instant</span>}
       </div>

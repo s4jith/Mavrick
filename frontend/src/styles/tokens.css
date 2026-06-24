@@ -1,75 +1,99 @@
-/* Mavrick — Premium Design System */
+/* Mavrick — PIXEL ART Design System */
 :root {
-  /* ── Deep space background ── */
-  --bg-primary: #06080f;
-  --bg-secondary: #0a0e1a;
-  --bg-tertiary: #0f1424;
+  /* ── Background palette ── */
+  --bg-primary: #0e0b1f;
+  --bg-secondary: #1a1535;
+  --bg-tertiary: #221e44;
+  --bg-card: #1c1838;
 
-  /* ── Glass surfaces ── */
-  --glass: rgba(14, 20, 40, 0.6);
-  --glass-border: rgba(255, 255, 255, 0.06);
-  --glass-hover: rgba(20, 28, 55, 0.7);
-  --glass-strong: rgba(14, 20, 40, 0.85);
+  /* ── Pixel art color palette ── */
+  --px-blue: #5bc8f5;
+  --px-blue-border: #2a78b0;
+  --px-blue-shadow: #165280;
 
-  /* ── Text hierarchy ── */
+  --px-pink: #f0507a;
+  --px-pink-border: #a02050;
+  --px-pink-shadow: #680c30;
+
+  --px-purple: #a855f7;
+  --px-purple-border: #6820b8;
+  --px-purple-shadow: #3e0880;
+
+  --px-orange: #f9a825;
+  --px-orange-border: #c47000;
+  --px-orange-shadow: #7a4000;
+
+  --px-green: #4ade80;
+  --px-green-border: #16803a;
+  --px-green-shadow: #0a4020;
+
+  /* ── Text ── */
   --text-primary: #f0f2f8;
-  --text-secondary: #8892a8;
-  --text-tertiary: #505a72;
-  --text-inverse: #06080f;
+  --text-secondary: #9ba8cc;
+  --text-tertiary: #5a6490;
+  --text-inverse: #0e0b1f;
 
-  /* ── Brand spectrum ── */
-  --accent: #6366f1;
-  --accent-light: #818cf8;
-  --accent-soft: rgba(99, 102, 241, 0.12);
-  --accent-glow: rgba(99, 102, 241, 0.25);
+  /* ── Semantic (mapped from pixel palette) ── */
+  --accent: #a855f7;
+  --accent-light: #c084fc;
+  --accent-soft: rgba(168, 85, 247, 0.15);
+  --accent-glow: rgba(168, 85, 247, 0.3);
 
-  /* ── Semantic colors ── */
-  --danger: #f43f5e;
-  --danger-soft: rgba(244, 63, 94, 0.12);
-  --danger-glow: rgba(244, 63, 94, 0.25);
+  --danger: #f0507a;
+  --danger-soft: rgba(240, 80, 122, 0.15);
+  --danger-glow: rgba(240, 80, 122, 0.3);
 
-  --success: #10b981;
-  --success-soft: rgba(16, 185, 129, 0.12);
-  --success-glow: rgba(16, 185, 129, 0.25);
+  --success: #4ade80;
+  --success-soft: rgba(74, 222, 128, 0.12);
+  --success-glow: rgba(74, 222, 128, 0.25);
 
-  --warning: #f59e0b;
-  --warning-soft: rgba(245, 158, 11, 0.12);
-  --warning-glow: rgba(245, 158, 11, 0.25);
+  --warning: #f9a825;
+  --warning-soft: rgba(249, 168, 37, 0.12);
+  --warning-glow: rgba(249, 168, 37, 0.25);
 
-  --info: #06b6d4;
-  --info-soft: rgba(6, 182, 212, 0.12);
+  --info: #5bc8f5;
+  --info-soft: rgba(91, 200, 245, 0.12);
+
+  /* ── Legacy glass vars (used in inline styles) ── */
+  --glass: rgba(28, 24, 56, 0.85);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-hover: rgba(35, 30, 70, 0.9);
+  --glass-strong: rgba(26, 21, 53, 0.95);
+
+  /* ── Surface var for SVG arcs ── */
+  --surface-3: rgba(255, 255, 255, 0.08);
 
   /* ── Gradients ── */
-  --gradient-brand: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a78bfa 100%);
-  --gradient-danger: linear-gradient(135deg, #f43f5e 0%, #fb7185 100%);
-  --gradient-warm: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
-  --gradient-aurora: linear-gradient(135deg, #6366f1 0%, #8b5cf6 30%, #f43f5e 70%, #f59e0b 100%);
-  --gradient-mesh: radial-gradient(at 20% 20%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
-                   radial-gradient(at 80% 80%, rgba(244, 63, 94, 0.08) 0%, transparent 50%),
-                   radial-gradient(at 50% 50%, rgba(139, 92, 246, 0.05) 0%, transparent 70%);
+  --gradient-brand: linear-gradient(135deg, #a855f7 0%, #5bc8f5 100%);
+  --gradient-danger: linear-gradient(135deg, #f0507a 0%, #f9a825 100%);
+  --gradient-warm: linear-gradient(135deg, #f9a825 0%, #fbbf24 100%);
+  --gradient-aurora: linear-gradient(135deg, #a855f7 0%, #5bc8f5 50%, #f0507a 100%);
+  --gradient-mesh:
+    radial-gradient(at 20% 20%, rgba(168, 85, 247, 0.1) 0%, transparent 50%),
+    radial-gradient(at 80% 80%, rgba(91, 200, 245, 0.07) 0%, transparent 50%);
 
   /* ── Shape ── */
-  --radius-xs: 8px;
-  --radius-sm: 12px;
-  --radius-md: 16px;
-  --radius-lg: 24px;
-  --radius-xl: 32px;
+  --radius-xs: 6px;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 18px;
+  --radius-xl: 22px;
   --radius-full: 9999px;
 
   /* ── Shadows ── */
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
-  --shadow-md: 0 8px 32px rgba(0, 0, 0, 0.3);
-  --shadow-lg: 0 16px 64px rgba(0, 0, 0, 0.4);
-  --shadow-glow-accent: 0 0 40px rgba(99, 102, 241, 0.15);
-  --shadow-glow-danger: 0 0 40px rgba(244, 63, 94, 0.15);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.6);
+  --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.7);
+  --shadow-glow-accent: 0 0 20px rgba(168, 85, 247, 0.35);
+  --shadow-glow-danger: 0 0 20px rgba(240, 80, 122, 0.35);
 
-  /* ── Motion ── */
+  /* ── Motion (snappier for pixel feel) ── */
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
   --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
-  --duration-fast: 150ms;
-  --duration-normal: 300ms;
-  --duration-slow: 500ms;
+  --duration-fast: 80ms;
+  --duration-normal: 180ms;
+  --duration-slow: 350ms;
 
   /* ── Layout ── */
   --max-width: 600px;
@@ -77,6 +101,5 @@
 
   /* ── Typography ── */
   color-scheme: dark;
-  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }

@@ -39,10 +39,10 @@ export function Register() {
         className="glass-card"
         style={{ width: '100%', maxWidth: 400, padding: 40 }}
       >
-        <div style={{ textAlign: 'center', marginBottom: 32 }}>
-          <div className="brand-mark" style={{ margin: '0 auto 16px' }}>M</div>
-          <h2 style={{ margin: 0, fontSize: 24, fontWeight: 800 }}>Create an account</h2>
-          <p style={{ color: 'var(--text-secondary)', margin: '8px 0 0', fontSize: 14 }}>Start turning panic into actionable plans.</p>
+        <div style={{ textAlign: 'center', marginBottom: 28 }}>
+          <div className="brand-mark" style={{ margin: '0 auto 18px' }}>M</div>
+          <h2 style={{ margin: 0, fontSize: 13, fontWeight: 400, fontFamily: "'Press Start 2P', cursive", letterSpacing: '0.04em', lineHeight: 1.6 }}>CREATE ACCOUNT</h2>
+          <p style={{ color: 'var(--text-secondary)', margin: '10px 0 0', fontSize: 13 }}>Start turning panic into actionable plans.</p>
         </div>
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>

@@ -16,6 +16,7 @@ from .logging_config import get_logger
 from .runtime import key_manager, settings
 from .core.db import init_db
 from .api import auth
+from .api import admin as admin_router
 from fastapi import Depends
 
 log = get_logger("api")
@@ -46,6 +47,7 @@ app.add_middleware(
 )
 
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
+app.include_router(admin_router.router, prefix="/api/admin", tags=["admin"])
 
 
 @app.get("/health")

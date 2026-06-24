@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { ApiError, getPlan } from '../api'
 import { getHealth } from '../api'
-import { Header } from '../components/Header'
+import { Navbar } from '../components/Navbar'
 import { HistoryPanel, saveToHistory } from '../components/HistoryPanel'
 import { PanicForm } from '../components/PanicForm'
 import { PlanView } from '../components/PlanView'
@@ -28,7 +28,7 @@ export function Dashboard() {
   const [loadingLine, setLoadingLine] = useState(LOADING_LINES[0])
   const [showHistory, setShowHistory] = useState(false)
   
-  const { isAuthenticated, logout, user } = useAuth();
+  const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -97,20 +97,15 @@ export function Dashboard() {
   if (!isAuthenticated) return null;
 
   return (
-    <motion.main 
-      className="app"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      transition={{ duration: 0.4 }}
-    >
-      <Header health={health} onHistoryClick={() => setShowHistory(true)} />
-      <div style={{ textAlign: 'right', marginBottom: '10px' }}>
-        <span style={{ fontSize: '12px', color: 'var(--text-tertiary)', marginRight: '10px' }}>
-          Logged in as {user?.email}
-        </span>
-        <button onClick={logout} className="chip">Logout</button>
-      </div>
+    <>
+      <Navbar health={health} onHistoryClick={() => setShowHistory(true)} />
+      <motion.main
+        className="app app-shell"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -20 }}
+        transition={{ duration: 0.4 }}
+      >
 
       {status === 'idle' && (
         <PanicForm onSubmit={handleSubmit} loading={false} error={error} />
@@ -132,5 +127,6 @@ export function Dashboard() {
 
       {showHistory && <HistoryPanel onClose={() => setShowHistory(false)} />}
     </motion.main>
+    </>
   )
 }

@@ -1,4 +1,4 @@
-import type { CoachRequest, CoachResponse, Health, PlanRequest, PlanResponse, UserLogin, UserRegister, Token, UserResponse } from './types'
+import type { AdminStats, AdminUser, CoachRequest, CoachResponse, Health, PlanRequest, PlanResponse, UserLogin, UserRegister, Token, UserResponse } from './types'
 
 const BASE = import.meta.env.VITE_API_BASE ?? ''
 
@@ -74,6 +74,28 @@ export async function getCoachMessage(req: CoachRequest): Promise<CoachResponse>
 
 export async function getHealth(): Promise<Health> {
   const res = await fetch(`${BASE}/health`)
+  if (!res.ok) return parseError(res)
+  return res.json()
+}
+
+// ── Admin API ────────────────────────────────────────────────────
+
+export async function adminGetUsers(): Promise<AdminUser[]> {
+  const res = await fetch(`${BASE}/api/admin/users`, { headers: getHeaders() })
+  if (!res.ok) return parseError(res)
+  return res.json()
+}
+
+export async function adminDeleteUser(id: string): Promise<void> {
+  const res = await fetch(`${BASE}/api/admin/users/${id}`, {
+    method: 'DELETE',
+    headers: getHeaders(),
+  })
+  if (!res.ok) return parseError(res)
+}
+
+export async function adminGetStats(): Promise<AdminStats> {
+  const res = await fetch(`${BASE}/api/admin/stats`, { headers: getHeaders() })
   if (!res.ok) return parseError(res)
   return res.json()
 }

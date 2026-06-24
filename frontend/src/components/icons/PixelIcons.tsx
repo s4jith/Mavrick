@@ -1,0 +1,389 @@
+/**
+ * Pixel-art SVG icons drawn on a 16×16 pixel grid.
+ * Each rect is one "pixel". Colors inherit from `currentColor`.
+ * Use: <MicIcon size={20} /> or <MicIcon size={20} color="#f0507a" />
+ */
+
+interface IconProps {
+  size?: number
+  color?: string
+  className?: string
+}
+
+const ic = (viewBox: string, paths: React.ReactNode) =>
+  function Icon({ size = 16, color = 'currentColor', className = '' }: IconProps) {
+    return (
+      <svg
+        width={size}
+        height={size}
+        viewBox={viewBox}
+        fill={color}
+        style={{ imageRendering: 'pixelated', display: 'block', flexShrink: 0 }}
+        className={className}
+        aria-hidden="true"
+      >
+        {paths}
+      </svg>
+    )
+  }
+
+/* ─── Mic ─────────────────────────────────── */
+export const MicIcon = ic('0 0 16 16', <>
+  <rect x="5" y="0" width="6" height="1" />
+  <rect x="4" y="1" width="8" height="7" />
+  <rect x="3" y="3" width="1" height="5" />
+  <rect x="12" y="3" width="1" height="5" />
+  <rect x="4" y="8" width="8" height="1" />
+  <rect x="5" y="9" width="6" height="1" />
+  <rect x="2" y="8" width="2" height="3" />
+  <rect x="12" y="8" width="2" height="3" />
+  <rect x="2" y="11" width="12" height="1" />
+  <rect x="7" y="12" width="2" height="3" />
+  <rect x="5" y="15" width="6" height="1" />
+</>)
+
+/* ─── Mic Off ─────────────────────────────── */
+export const MicOffIcon = ic('0 0 16 16', <>
+  <rect x="5" y="0" width="6" height="1" />
+  <rect x="4" y="1" width="8" height="7" />
+  <rect x="5" y="9" width="6" height="1" />
+  <rect x="2" y="11" width="12" height="1" />
+  <rect x="7" y="12" width="2" height="3" />
+  <rect x="5" y="15" width="6" height="1" />
+  {/* X mark */}
+  <rect x="0" y="13" width="2" height="2" />
+  <rect x="2" y="11" width="2" height="2" />
+  <rect x="4" y="9" width="2" height="2" />
+  <rect x="10" y="9" width="2" height="2" />
+  <rect x="12" y="11" width="2" height="2" />
+  <rect x="14" y="13" width="2" height="2" />
+</>)
+
+/* ─── Speaker / Volume ────────────────────── */
+export const SpeakerIcon = ic('0 0 16 16', <>
+  <rect x="0" y="5" width="4" height="6" />
+  <rect x="4" y="3" width="2" height="10" />
+  <rect x="6" y="1" width="2" height="14" />
+  <rect x="10" y="4" width="2" height="1" />
+  <rect x="11" y="5" width="2" height="6" />
+  <rect x="10" y="11" width="2" height="1" />
+  <rect x="13" y="2" width="2" height="1" />
+  <rect x="14" y="3" width="1" height="10" />
+  <rect x="13" y="13" width="2" height="1" />
+</>)
+
+/* ─── Trophy ──────────────────────────────── */
+export const TrophyIcon = ic('0 0 16 16', <>
+  <rect x="3" y="0" width="10" height="1" />
+  <rect x="2" y="1" width="12" height="6" />
+  <rect x="1" y="1" width="2" height="4" />
+  <rect x="13" y="1" width="2" height="4" />
+  <rect x="1" y="5" width="2" height="1" />
+  <rect x="13" y="5" width="2" height="1" />
+  <rect x="3" y="7" width="10" height="1" />
+  <rect x="4" y="8" width="8" height="1" />
+  <rect x="5" y="9" width="6" height="1" />
+  <rect x="6" y="10" width="4" height="1" />
+  <rect x="7" y="11" width="2" height="2" />
+  <rect x="4" y="13" width="8" height="2" />
+  <rect x="3" y="15" width="10" height="1" />
+</>)
+
+/* ─── Check ───────────────────────────────── */
+export const CheckIcon = ic('0 0 16 16', <>
+  <rect x="0" y="8" width="2" height="2" />
+  <rect x="2" y="10" width="2" height="2" />
+  <rect x="4" y="12" width="2" height="2" />
+  <rect x="6" y="10" width="2" height="2" />
+  <rect x="8" y="8" width="2" height="2" />
+  <rect x="10" y="6" width="2" height="2" />
+  <rect x="12" y="4" width="2" height="2" />
+  <rect x="14" y="2" width="2" height="2" />
+</>)
+
+/* ─── Lightning / Zap ────────────────────── */
+export const ZapIcon = ic('0 0 16 16', <>
+  <rect x="9" y="0" width="5" height="1" />
+  <rect x="7" y="1" width="5" height="1" />
+  <rect x="5" y="2" width="5" height="1" />
+  <rect x="4" y="3" width="5" height="1" />
+  <rect x="3" y="4" width="8" height="1" />
+  <rect x="2" y="5" width="8" height="1" />
+  <rect x="6" y="6" width="5" height="1" />
+  <rect x="5" y="7" width="5" height="1" />
+  <rect x="4" y="8" width="5" height="1" />
+  <rect x="3" y="9" width="5" height="1" />
+  <rect x="2" y="10" width="5" height="1" />
+  <rect x="1" y="11" width="5" height="1" />
+  <rect x="0" y="12" width="5" height="1" />
+</>)
+
+/* ─── Warning / Alert ────────────────────── */
+export const WarningIcon = ic('0 0 16 16', <>
+  <rect x="7" y="0" width="2" height="1" />
+  <rect x="6" y="1" width="4" height="1" />
+  <rect x="5" y="2" width="6" height="1" />
+  <rect x="4" y="3" width="8" height="1" />
+  <rect x="3" y="4" width="10" height="1" />
+  <rect x="2" y="5" width="12" height="1" />
+  <rect x="1" y="6" width="14" height="1" />
+  <rect x="0" y="7" width="16" height="1" />
+  <rect x="0" y="8" width="16" height="1" />
+  <rect x="1" y="9" width="14" height="1" />
+  <rect x="2" y="10" width="12" height="1" />
+  <rect x="3" y="11" width="10" height="1" />
+  <rect x="4" y="12" width="8" height="1" />
+  <rect x="5" y="13" width="6" height="1" />
+  <rect x="6" y="14" width="4" height="1" />
+  <rect x="7" y="15" width="2" height="1" />
+  {/* Exclamation inside */}
+  <rect x="7" y="4" width="2" height="5" fill="var(--bg-primary)" />
+  <rect x="7" y="11" width="2" height="2" fill="var(--bg-primary)" />
+</>)
+
+/* ─── Play ────────────────────────────────── */
+export const PlayIcon = ic('0 0 16 16', <>
+  <rect x="2" y="0" width="2" height="16" />
+  <rect x="4" y="1" width="2" height="14" />
+  <rect x="6" y="2" width="2" height="12" />
+  <rect x="8" y="3" width="2" height="10" />
+  <rect x="10" y="4" width="2" height="8" />
+  <rect x="12" y="5" width="2" height="6" />
+  <rect x="14" y="6" width="2" height="4" />
+</>)
+
+/* ─── Timer ───────────────────────────────── */
+export const TimerIcon = ic('0 0 16 16', <>
+  <rect x="5" y="0" width="6" height="1" />
+  <rect x="3" y="1" width="10" height="2" />
+  <rect x="2" y="3" width="12" height="10" />
+  <rect x="1" y="4" width="1" height="8" />
+  <rect x="14" y="4" width="1" height="8" />
+  <rect x="2" y="13" width="12" height="2" />
+  <rect x="3" y="15" width="10" height="1" />
+  {/* Clock hands */}
+  <rect x="7" y="5" width="2" height="4" fill="var(--bg-primary)" />
+  <rect x="8" y="9" width="3" height="2" fill="var(--bg-primary)" />
+</>)
+
+/* ─── User / Person ──────────────────────── */
+export const UserIcon = ic('0 0 16 16', <>
+  <rect x="5" y="0" width="6" height="1" />
+  <rect x="4" y="1" width="8" height="6" />
+  <rect x="3" y="2" width="1" height="4" />
+  <rect x="12" y="2" width="1" height="4" />
+  <rect x="4" y="7" width="8" height="1" />
+  <rect x="5" y="8" width="6" height="1" />
+  <rect x="3" y="9" width="10" height="1" />
+  <rect x="1" y="10" width="14" height="6" />
+</>)
+
+/* ─── Shield / Admin ─────────────────────── */
+export const ShieldIcon = ic('0 0 16 16', <>
+  <rect x="3" y="0" width="10" height="1" />
+  <rect x="2" y="1" width="12" height="1" />
+  <rect x="1" y="2" width="14" height="8" />
+  <rect x="0" y="3" width="1" height="6" />
+  <rect x="15" y="3" width="1" height="6" />
+  <rect x="1" y="10" width="14" height="2" />
+  <rect x="2" y="12" width="12" height="1" />
+  <rect x="3" y="13" width="10" height="1" />
+  <rect x="5" y="14" width="6" height="1" />
+  <rect x="7" y="15" width="2" height="1" />
+  {/* Check inside */}
+  <rect x="4" y="6" width="2" height="2" fill="var(--bg-primary)" />
+  <rect x="6" y="8" width="2" height="2" fill="var(--bg-primary)" />
+  <rect x="8" y="6" width="2" height="2" fill="var(--bg-primary)" />
+  <rect x="10" y="4" width="2" height="2" fill="var(--bg-primary)" />
+</>)
+
+/* ─── Chart / Stats ──────────────────────── */
+export const ChartIcon = ic('0 0 16 16', <>
+  <rect x="0" y="14" width="16" height="2" />
+  <rect x="0" y="0" width="2" height="16" />
+  <rect x="3" y="8" width="3" height="6" />
+  <rect x="7" y="4" width="3" height="10" />
+  <rect x="11" y="6" width="3" height="8" />
+</>)
+
+/* ─── Users list ─────────────────────────── */
+export const UsersIcon = ic('0 0 16 16', <>
+  {/* Person 1 */}
+  <rect x="0" y="1" width="5" height="4" />
+  <rect x="0" y="5" width="7" height="4" />
+  {/* Person 2 */}
+  <rect x="6" y="0" width="5" height="4" />
+  <rect x="4" y="4" width="9" height="4" />
+  {/* Body row */}
+  <rect x="0" y="9" width="16" height="7" />
+</>)
+
+/* ─── Home ───────────────────────────────── */
+export const HomeIcon = ic('0 0 16 16', <>
+  <rect x="7" y="0" width="2" height="1" />
+  <rect x="6" y="1" width="4" height="1" />
+  <rect x="5" y="2" width="6" height="1" />
+  <rect x="4" y="3" width="8" height="1" />
+  <rect x="3" y="4" width="10" height="1" />
+  <rect x="2" y="5" width="12" height="1" />
+  <rect x="1" y="6" width="14" height="1" />
+  <rect x="0" y="7" width="16" height="1" />
+  <rect x="1" y="8" width="14" height="7" />
+  <rect x="1" y="15" width="5" height="1" />
+  <rect x="10" y="15" width="5" height="1" />
+  {/* Door */}
+  <rect x="6" y="10" width="4" height="5" fill="var(--bg-primary)" />
+</>)
+
+/* ─── Logout / Exit ──────────────────────── */
+export const LogoutIcon = ic('0 0 16 16', <>
+  <rect x="0" y="1" width="10" height="14" />
+  <rect x="10" y="7" width="6" height="2" />
+  <rect x="12" y="5" width="2" height="2" />
+  <rect x="12" y="9" width="2" height="2" />
+  <rect x="14" y="6" width="2" height="4" />
+</>)
+
+/* ─── X / Close ──────────────────────────── */
+export const CloseIcon = ic('0 0 16 16', <>
+  <rect x="0" y="0" width="2" height="2" />
+  <rect x="2" y="2" width="2" height="2" />
+  <rect x="4" y="4" width="2" height="2" />
+  <rect x="6" y="6" width="2" height="2" />  {/* skip center */}
+  <rect x="8" y="8" width="2" height="2" />
+  <rect x="10" y="10" width="2" height="2" />
+  <rect x="12" y="12" width="2" height="2" />
+  <rect x="14" y="14" width="2" height="2" />
+  <rect x="14" y="0" width="-12" height="2" />
+  <rect x="12" y="2" width="2" height="2" />
+  <rect x="10" y="4" width="2" height="2" />
+  <rect x="2" y="10" width="2" height="2" />
+  <rect x="0" y="12" width="2" height="2" />
+  <rect x="0" y="14" width="2" height="2" />
+</>)
+
+/* ─── Refresh ────────────────────────────── */
+export const RefreshIcon = ic('0 0 16 16', <>
+  <rect x="5" y="0" width="6" height="2" />
+  <rect x="3" y="2" width="2" height="2" />
+  <rect x="1" y="4" width="2" height="6" />
+  <rect x="3" y="10" width="2" height="2" />
+  <rect x="5" y="12" width="2" height="2" />
+  <rect x="7" y="14" width="2" height="2" />
+  <rect x="9" y="12" width="4" height="2" />
+  <rect x="13" y="4" width="2" height="8" />
+  <rect x="11" y="2" width="2" height="2" />
+  {/* Arrow tip */}
+  <rect x="11" y="0" width="4" height="2" />
+  <rect x="13" y="2" width="2" height="4" />
+  <rect x="11" y="4" width="2" height="2" />
+</>)
+
+/* ─── Database ───────────────────────────── */
+export const DatabaseIcon = ic('0 0 16 16', <>
+  <rect x="2" y="0" width="12" height="3" />
+  <rect x="0" y="1" width="2" height="2" />
+  <rect x="14" y="1" width="2" height="2" />
+  <rect x="0" y="3" width="16" height="1" />
+  <rect x="0" y="4" width="2" height="4" />
+  <rect x="14" y="4" width="2" height="4" />
+  <rect x="2" y="7" width="12" height="1" />
+  <rect x="0" y="8" width="16" height="1" />
+  <rect x="0" y="9" width="2" height="4" />
+  <rect x="14" y="9" width="2" height="4" />
+  <rect x="2" y="12" width="12" height="1" />
+  <rect x="0" y="13" width="16" height="1" />
+  <rect x="2" y="14" width="12" height="2" />
+  <rect x="0" y="14" width="2" height="2" />
+  <rect x="14" y="14" width="2" height="2" />
+</>)
+
+/* ─── Key ────────────────────────────────── */
+export const KeyIcon = ic('0 0 16 16', <>
+  <rect x="0" y="5" width="6" height="6" />
+  <rect x="6" y="6" width="2" height="4" />
+  <rect x="6" y="3" width="2" height="3" />
+  <rect x="8" y="3" width="2" height="2" />
+  <rect x="8" y="5" width="8" height="6" />
+  <rect x="10" y="11" width="2" height="2" />
+  <rect x="13" y="11" width="2" height="2" />
+  {/* Keyhole */}
+  <rect x="2" y="7" width="2" height="2" fill="var(--bg-primary)" />
+</>)
+
+/* ─── Flask / Lab ────────────────────────── */
+export const FlaskIcon = ic('0 0 16 16', <>
+  <rect x="5" y="0" width="6" height="1" />
+  <rect x="6" y="1" width="4" height="5" />
+  <rect x="5" y="6" width="6" height="1" />
+  <rect x="3" y="7" width="10" height="1" />
+  <rect x="2" y="8" width="12" height="6" />
+  <rect x="1" y="9" width="1" height="4" />
+  <rect x="14" y="9" width="1" height="4" />
+  <rect x="2" y="14" width="12" height="2" />
+  {/* Bubbles */}
+  <rect x="5" y="10" width="2" height="2" fill="var(--bg-primary)" />
+  <rect x="9" y="12" width="2" height="2" fill="var(--bg-primary)" />
+</>)
+
+/* ─── Trash / Delete ─────────────────────── */
+export const TrashIcon = ic('0 0 16 16', <>
+  <rect x="4" y="0" width="8" height="2" />
+  <rect x="2" y="2" width="12" height="1" />
+  <rect x="0" y="3" width="16" height="2" />
+  <rect x="1" y="5" width="14" height="11" />
+  <rect x="0" y="5" width="1" height="11" />
+  <rect x="15" y="5" width="1" height="11" />
+  {/* Lid handle */}
+  <rect x="6" y="0" width="4" height="1" fill="var(--bg-primary)" />
+  {/* Inner lines */}
+  <rect x="4" y="7" width="2" height="7" fill="var(--bg-primary)" />
+  <rect x="7" y="7" width="2" height="7" fill="var(--bg-primary)" />
+  <rect x="10" y="7" width="2" height="7" fill="var(--bg-primary)" />
+</>)
+
+/* ─── Eye / View ─────────────────────────── */
+export const EyeIcon = ic('0 0 16 16', <>
+  <rect x="0" y="6" width="4" height="4" />
+  <rect x="4" y="4" width="2" height="2" />
+  <rect x="4" y="10" width="2" height="2" />
+  <rect x="6" y="3" width="4" height="2" />
+  <rect x="6" y="11" width="4" height="2" />
+  <rect x="10" y="4" width="2" height="2" />
+  <rect x="10" y="10" width="2" height="2" />
+  <rect x="12" y="6" width="4" height="4" />
+  {/* Pupil */}
+  <rect x="6" y="6" width="4" height="4" fill="var(--bg-primary)" />
+  <rect x="7" y="7" width="2" height="2" />
+</>)
+
+/* ─── Activity / Pulse ───────────────────── */
+export const ActivityIcon = ic('0 0 16 16', <>
+  <rect x="0" y="8" width="3" height="1" />
+  <rect x="3" y="6" width="1" height="3" />
+  <rect x="4" y="4" width="1" height="5" />
+  <rect x="5" y="2" width="1" height="7" />
+  <rect x="6" y="5" width="1" height="4" />
+  <rect x="7" y="7" width="1" height="2" />
+  <rect x="8" y="8" width="1" height="1" />
+  <rect x="9" y="3" width="1" height="6" />
+  <rect x="10" y="5" width="1" height="4" />
+  <rect x="11" y="7" width="1" height="2" />
+  <rect x="12" y="8" width="1" height="1" />
+  <rect x="13" y="8" width="3" height="1" />
+  <rect x="0" y="14" width="16" height="1" />
+</>)
+
+/* ─── Menu / Hamburger ───────────────────── */
+export const MenuIcon = ic('0 0 16 16', <>
+  <rect x="0" y="2" width="16" height="2" />
+  <rect x="0" y="7" width="16" height="2" />
+  <rect x="0" y="12" width="16" height="2" />
+</>)
+
+/* ─── Plus ───────────────────────────────── */
+export const PlusIcon = ic('0 0 16 16', <>
+  <rect x="6" y="0" width="4" height="6" />
+  <rect x="0" y="6" width="16" height="4" />
+  <rect x="6" y="10" width="4" height="6" />
+</>)

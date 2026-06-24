@@ -1,6 +1,9 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { UserResponse } from '../types';
-import { getHealth } from '../api';
+
+const ADMIN_EMAILS = new Set([
+  'teammistaketechnologies@gmail.com',
+])
 
 interface AuthContextType {
   user: UserResponse | null;
@@ -8,6 +11,7 @@ interface AuthContextType {
   login: (token: string, user: UserResponse) => void;
   logout: () => void;
   isAuthenticated: boolean;
+  isAdmin: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -17,10 +21,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [token, setToken] = useState<string | null>(null);
 
   useEffect(() => {
-    // Check local storage on mount
     const storedToken = localStorage.getItem('mavrick_token');
     const storedUser = localStorage.getItem('mavrick_user');
-    
     if (storedToken && storedUser) {
       try {
         setToken(storedToken);
@@ -46,8 +48,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.removeItem('mavrick_user');
   };
 
+  const isAdmin = !!user && ADMIN_EMAILS.has(user.email.toLowerCase());
+
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, isAuthenticated: !!token }}>
+    <AuthContext.Provider value={{
+      user, token, login, logout,
+      isAuthenticated: !!token,
+      isAdmin,
+    }}>
       {children}
     </AuthContext.Provider>
   );
@@ -55,8 +63,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
+  if (!context) throw new Error('useAuth must be used within an AuthProvider');
   return context;
 }
