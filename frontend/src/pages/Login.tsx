@@ -1,26 +1,31 @@
 import { useState } from 'react'
-import { motion } from 'framer-motion'
 import { Link, useNavigate } from 'react-router-dom'
-import { loginUser } from '../api'
+import { motion } from 'framer-motion'
+import { loginUser, getMe, googleLoginUrl } from '../api'
 import { useAuth } from '../context/AuthContext'
+import { MavrickShell } from '../components/pixel/MavrickShell'
+import { RobotMascot } from '../components/pixel/RobotMascot'
+import { AuthField } from '../components/pixel/AuthField'
+import { BrandMark } from '../components/pixel/BrandMark'
+import { MailIcon, LockIcon, CheckIcon, PlayIcon } from '../components/icons/PixelIcons'
 
 export function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [remember, setRemember] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
   const { login } = useAuth()
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  async function submit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
     setLoading(true)
     try {
-      const tokenData = await loginUser({ email, password })
-      // For now, we mock the user response here since login endpoint doesn't return user details directly in our simple setup,
-      // but typically we'd fetch `/api/auth/me` next. Let's just create a dummy object based on email.
-      login(tokenData.access_token, { id: 'temp', email, name: email.split('@')[0] })
+      const t = await loginUser({ email, password })
+      const me = await getMe(t.access_token)
+      login(t.access_token, me)
       navigate('/app')
     } catch (err: any) {
       setError(err.message || 'Login failed')
@@ -30,53 +35,50 @@ export function Login() {
   }
 
   return (
-    <div style={{ minHeight: '100dvh', display: 'grid', placeItems: 'center', padding: 20 }}>
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.95 }}
-        className="glass-card"
-        style={{ width: '100%', maxWidth: 400, padding: 40 }}
+    <MavrickShell>
+      <div className="mvk-hero">
+        <RobotMascot size={58} />
+        <div className="mvk-hero-word">MAVRICK</div>
+        <div className="mvk-badge">AI CRISIS COMMANDER</div>
+        <div className="mvk-hero-sub">Turn <span className="mvk-coral">Panic</span> into a <span className="mvk-coral">Plan</span>. Instantly.</div>
+      </div>
+
+      <motion.form
+        className="mvk-card"
+        onSubmit={submit}
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
       >
-        <div style={{ textAlign: 'center', marginBottom: 28 }}>
-          <div className="brand-mark" style={{ margin: '0 auto 18px' }}>M</div>
-          <h2 style={{ margin: 0, fontSize: 14, fontWeight: 400, fontFamily: "'Press Start 2P', cursive", letterSpacing: '0.04em', lineHeight: 1.5 }}>WELCOME BACK</h2>
-          <p style={{ color: 'var(--text-secondary)', margin: '10px 0 0', fontSize: 13 }}>Enter your details to access your plans.</p>
+        <div className="mvk-sec-head"><span className="mvk-sec-title">WELCOME BACK</span></div>
+        <div className="mvk-card-subtitle">Log in to continue your mission</div>
+
+        <div className="mvk-form">
+          <AuthField icon={<MailIcon size={16} color="#E85D50" />} placeholder="Email address" type="email" value={email} onChange={setEmail} />
+          <AuthField icon={<LockIcon size={16} color="#E85D50" />} placeholder="Password" value={password} onChange={setPassword} password />
         </div>
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          <div className="field">
-            <label>Email</label>
-            <input 
-              type="email" 
-              className="num-input" 
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
-          <div className="field">
-            <label>Password</label>
-            <input 
-              type="password" 
-              className="num-input" 
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
-
-          {error && <div className="form-error">{error}</div>}
-
-          <button type="submit" className="panic-btn" disabled={loading} style={{ marginTop: 8 }}>
-            {loading ? 'Signing in...' : 'Sign In'}
+        <div className="mvk-form-row">
+          <button type="button" className="mvk-check-row" onClick={() => setRemember(r => !r)}>
+            <span className={`mvk-checkbox ${remember ? 'on' : ''}`}>{remember && <CheckIcon size={10} color="#FFF6E6" />}</span>
+            Remember me
           </button>
-        </form>
+          <span className="mvk-auth-link">Forgot password?</span>
+        </div>
 
-        <p style={{ textAlign: 'center', marginTop: 24, fontSize: 14, color: 'var(--text-secondary)' }}>
-          Don't have an account? <Link to="/register" style={{ color: 'var(--accent-light)', textDecoration: 'none', fontWeight: 600 }}>Sign up</Link>
-        </p>
-      </motion.div>
-    </div>
+        {error && <div className="mvk-error">{error}</div>}
+
+        <button type="submit" className="mvk-save-btn" disabled={loading}>
+          <PlayIcon size={16} color="#FFF6E6" /> {loading ? 'LOGGING IN…' : 'LOGIN'}
+        </button>
+
+        <div className="mvk-or"><span>OR</span></div>
+
+        <button type="button" className="mvk-social-btn" onClick={() => { window.location.href = googleLoginUrl() }}><BrandMark provider="google" size={20} /> CONTINUE WITH GOOGLE</button>
+        <button type="button" className="mvk-social-btn mvk-social-disabled" disabled title="Coming soon"><BrandMark provider="microsoft" size={20} /> CONTINUE WITH MICROSOFT</button>
+
+        <div className="mvk-auth-foot">New here? <Link to="/register" className="mvk-auth-link">Create an account</Link></div>
+      </motion.form>
+    </MavrickShell>
   )
 }

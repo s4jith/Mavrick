@@ -1,138 +1,92 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { motion } from 'framer-motion'
 import { useAuth } from '../context/AuthContext'
-import { UserIcon, TrashIcon, ShieldIcon, ActivityIcon } from '../components/icons/PixelIcons'
+import { MavrickShell } from '../components/pixel/MavrickShell'
+import { BrandHeader } from '../components/pixel/BrandHeader'
+import { GearIcon, UserIcon, ActivityIcon, TrashIcon, ShieldIcon, LogoutIcon } from '../components/icons/PixelIcons'
 
-function SettingsSection({ title, icon, children }: { title: string; icon: React.ReactNode; children: React.ReactNode }) {
+function Section({ title, icon, children }: { title: string; icon: React.ReactNode; children: React.ReactNode }) {
   return (
-    <div className="settings-section px-card">
-      <div className="settings-section-head">
-        {icon}
-        <span className="settings-section-title">{title}</span>
-      </div>
+    <div className="mvk-card mvk-card-pad">
+      <div className="mvk-sec-head"><span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>{icon}<span className="mvk-sec-title">{title}</span></span></div>
       {children}
     </div>
   )
 }
 
+function Toggle({ on, onClick }: { on: boolean; onClick: () => void }) {
+  return (
+    <button className={`mvk-toggle ${on ? 'on' : ''}`} onClick={onClick} aria-pressed={on}><span /></button>
+  )
+}
+
 export function Settings() {
-  const { user } = useAuth()
-  const [cleared, setCleared] = useState(false)
-  const [gridEnabled, setGridEnabled] = useState(true)
+  const { user, logout } = useAuth()
+  const navigate = useNavigate()
+  const [grid, setGrid] = useState(true)
   const [sound, setSound] = useState(true)
+  const [cleared, setCleared] = useState(false)
 
   function clearHistory() {
     localStorage.removeItem('mavrick_history')
-    setCleared(true)
-    setTimeout(() => setCleared(false), 2400)
+    setCleared(true); setTimeout(() => setCleared(false), 2200)
   }
-
   function clearReminders() {
-    if (confirm('Delete all reminders? This cannot be undone.')) {
-      localStorage.removeItem('mavrick_reminders')
-    }
+    if (confirm('Delete all reminders? This cannot be undone.')) localStorage.removeItem('mavrick_reminders')
   }
+  function doLogout() { logout(); navigate('/login') }
 
   return (
-    <div className="settings-page">
-      <div style={{ fontFamily: "'Press Start 2P', cursive", fontSize: 11, color: 'var(--text-primary)', marginBottom: 24 }}>
-        SETTINGS
+    <MavrickShell active="profile">
+      <BrandHeader />
+
+      <div className="mvk-page-title">
+        <GearIcon size={18} color="#E85D50" />
+        <span className="mvk-page-title-text">SETTINGS</span>
       </div>
+      <div className="mvk-page-sub">Tune your AI crisis commander.</div>
 
-      <div className="settings-grid">
-        {/* Profile */}
-        <SettingsSection title="PROFILE" icon={<UserIcon size={14} color="var(--px-purple)" />}>
-          <div className="settings-row">
-            <label className="settings-label">Name</label>
-            <div className="settings-value">{user?.name || '—'}</div>
-          </div>
-          <div className="settings-row">
-            <label className="settings-label">Email</label>
-            <div className="settings-value">{user?.email}</div>
-          </div>
-          <div className="settings-row">
-            <label className="settings-label">Account ID</label>
-            <div className="settings-value" style={{ fontFamily: 'monospace', fontSize: 11 }}>{user?.id?.slice(0, 16)}…</div>
-          </div>
-          <div className="settings-note">Profile editing coming soon — contact support to update your name.</div>
-        </SettingsSection>
+      <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
+        <Section title="PROFILE" icon={<UserIcon size={13} color="#E85D50" />}>
+          <div className="mvk-set-row"><span className="mvk-set-label">NAME</span><span className="mvk-set-val">{user?.name || '—'}</span></div>
+          <div className="mvk-set-row"><span className="mvk-set-label">EMAIL</span><span className="mvk-set-val">{user?.email}</span></div>
+          <div className="mvk-set-note">Profile editing coming soon.</div>
+        </Section>
 
-        {/* Preferences */}
-        <SettingsSection title="PREFERENCES" icon={<ActivityIcon size={14} color="var(--px-blue)" />}>
-          <div className="settings-row settings-row--toggle">
-            <div>
-              <div className="settings-label">Pixel Grid Background</div>
-              <div className="settings-hint">Subtle grid overlay on the page</div>
-            </div>
-            <button
-              className={`settings-toggle ${gridEnabled ? 'on' : ''}`}
-              onClick={() => setGridEnabled(g => !g)}
-              aria-pressed={gridEnabled}
-            >
-              <span />
-            </button>
+        <Section title="PREFERENCES" icon={<ActivityIcon size={13} color="#4361EE" />}>
+          <div className="mvk-set-row">
+            <div><div className="mvk-set-label">PIXEL GRID</div><div className="mvk-set-hint">Background grid overlay</div></div>
+            <Toggle on={grid} onClick={() => setGrid(g => !g)} />
           </div>
-          <div className="settings-row settings-row--toggle">
-            <div>
-              <div className="settings-label">Voice Read-aloud</div>
-              <div className="settings-hint">Use browser TTS to speak plan steps</div>
-            </div>
-            <button
-              className={`settings-toggle ${sound ? 'on' : ''}`}
-              onClick={() => setSound(s => !s)}
-              aria-pressed={sound}
-            >
-              <span />
-            </button>
+          <div className="mvk-set-row">
+            <div><div className="mvk-set-label">VOICE READ-ALOUD</div><div className="mvk-set-hint">Speak plan steps via TTS</div></div>
+            <Toggle on={sound} onClick={() => setSound(s => !s)} />
           </div>
-          <div className="settings-note">More preferences coming soon.</div>
-        </SettingsSection>
+        </Section>
 
-        {/* Data */}
-        <SettingsSection title="DATA" icon={<TrashIcon size={14} color="var(--px-pink)" />}>
-          <div className="settings-row">
-            <div>
-              <div className="settings-label">Crisis History</div>
-              <div className="settings-hint">Stored locally in your browser</div>
-            </div>
-            <button className="settings-danger-btn" onClick={clearHistory}>
-              {cleared ? '✓ Cleared!' : 'Clear History'}
-            </button>
+        <Section title="DATA" icon={<TrashIcon size={13} color="#E85D50" />}>
+          <div className="mvk-set-row">
+            <div><div className="mvk-set-label">CRISIS HISTORY</div><div className="mvk-set-hint">Stored in your browser</div></div>
+            <button className="mvk-set-danger" onClick={clearHistory}>{cleared ? 'CLEARED ✓' : 'CLEAR'}</button>
           </div>
-          <div className="settings-row">
-            <div>
-              <div className="settings-label">Reminders</div>
-              <div className="settings-hint">All saved reminders</div>
-            </div>
-            <button className="settings-danger-btn" onClick={clearReminders}>
-              Clear All
-            </button>
+          <div className="mvk-set-row">
+            <div><div className="mvk-set-label">REMINDERS</div><div className="mvk-set-hint">All saved reminders</div></div>
+            <button className="mvk-set-danger" onClick={clearReminders}>CLEAR</button>
           </div>
-          <div className="settings-note">Data is stored in your browser only — we don't upload history or reminders to our servers.</div>
-        </SettingsSection>
+          <div className="mvk-set-note">Data lives only in your browser — nothing is uploaded.</div>
+        </Section>
 
-        {/* About */}
-        <SettingsSection title="ABOUT" icon={<ShieldIcon size={14} color="var(--px-cyan)" />}>
-          <div className="settings-row">
-            <div className="settings-label">Version</div>
-            <div className="settings-value">1.0.0</div>
-          </div>
-          <div className="settings-row">
-            <div className="settings-label">AI Model</div>
-            <div className="settings-value">Gemini 2.5 Flash</div>
-          </div>
-          <div className="settings-row">
-            <div className="settings-label">Built for</div>
-            <div className="settings-value">Vibe2Ship Hackathon</div>
-          </div>
-          <div className="settings-row">
-            <div className="settings-label">By</div>
-            <div className="settings-value">Team Mistake Technologies</div>
-          </div>
-          <div className="settings-note">
-            Mavrick turns panic into a plan — 1 Gemini call, step-by-step, first action in seconds.
-          </div>
-        </SettingsSection>
-      </div>
-    </div>
+        <Section title="ABOUT" icon={<ShieldIcon size={13} color="#5FD0E6" />}>
+          <div className="mvk-set-row"><span className="mvk-set-label">VERSION</span><span className="mvk-set-val">1.0.0</span></div>
+          <div className="mvk-set-row"><span className="mvk-set-label">AI MODEL</span><span className="mvk-set-val">Gemini 2.5 Flash</span></div>
+          <div className="mvk-set-row"><span className="mvk-set-label">BUILT FOR</span><span className="mvk-set-val">Vibe2Ship</span></div>
+        </Section>
+
+        <button className="mvk-btn mvk-btn-outline" onClick={doLogout}>
+          <LogoutIcon size={14} color="#E85D50" /> LOG OUT
+        </button>
+      </motion.div>
+    </MavrickShell>
   )
 }

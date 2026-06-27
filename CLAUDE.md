@@ -112,8 +112,12 @@ npm run dev
 - [x] Frontend: React PWA + Panic Mode screen wired to the live API
 - [x] Persistent SQLite cache — plans survive backend restarts (`backend/data/cache.db`)
 - [x] Degraded fallback — generic triage plan returned when all API keys exhausted (no 503)
-- [ ] Firestore persistence (user memory, history)
-- [ ] Features: voice, Gmail scan, Calendar write, Coach/TTS
+- [x] MongoDB (Atlas) user store + JWT auth (note: stack swapped Firestore → MongoDB)
+- [x] Google OAuth login + Gmail scan + Calendar read/write (HITL) + Cloud TTS coach voice
+  - Backend: `api/google.py` (oauth), `api/integrations.py`, `api/tts.py`; helpers in `core/google_oauth.py` + `core/google_store.py`. Google tokens stored on the Mongo user doc, auto-refreshed.
+  - Calendar writes require `confirm=true` (HITL rule). TTS falls back to browser speech if no `GOOGLE_TTS_API_KEY`.
+  - Requires Google Console: redirect URI `http://localhost:8000/api/auth/google/callback`, consent-screen scopes, and your email as a Test user. See README → Setup.
+- [ ] Server-side crisis-history persistence (still browser-local); Outlook OAuth; PWA push
 
 ## Run the full product (two terminals)
 ```

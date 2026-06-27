@@ -1,4 +1,4 @@
-import type { AdminStats, AdminUser, CoachRequest, CoachResponse, Health, PlanRequest, PlanResponse, UserLogin, UserRegister, Token, UserResponse } from './types'
+import type { AdminStats, AdminUser, CoachRequest, CoachResponse, Health, PlanRequest, PlanResponse, UserLogin, UserRegister, Token, UserResponse, IntegrationStatus, GmailScan, CalendarEvents, CreateEventRequest, CalendarEvent } from './types'
 
 const BASE = import.meta.env.VITE_API_BASE ?? ''
 
@@ -50,6 +50,81 @@ export async function registerUser(req: UserRegister): Promise<UserResponse> {
   })
   if (!res.ok) return parseError(res)
   return res.json()
+}
+
+export async function getMe(token?: string): Promise<UserResponse> {
+  const auth = token ?? localStorage.getItem('mavrick_token')
+  const res = await fetch(`${BASE}/api/auth/me`, {
+    headers: { Authorization: `Bearer ${auth}` },
+  })
+  if (!res.ok) return parseError(res)
+  return res.json()
+}
+
+// Full-page redirect into the Google OAuth consent flow (via the Vite proxy).
+export function googleLoginUrl(): string {
+  return `${BASE}/api/auth/google/login`
+}
+
+// ── Google integrations ─────────────────────────────────────────
+
+export async function getIntegrationStatus(): Promise<IntegrationStatus> {
+  const res = await fetch(`${BASE}/api/integrations/status`, { headers: getHeaders() })
+  if (!res.ok) return parseError(res)
+  return res.json()
+}
+
+export async function disconnectGoogle(): Promise<void> {
+  const res = await fetch(`${BASE}/api/integrations/disconnect`, {
+    method: 'POST', headers: getHeaders(),
+  })
+  if (!res.ok) return parseError(res)
+}
+
+export async function scanGmail(maxResults = 15): Promise<GmailScan> {
+  const res = await fetch(`${BASE}/api/integrations/gmail/scan?max_results=${maxResults}`, {
+    headers: getHeaders(),
+  })
+  if (!res.ok) return parseError(res)
+  return res.json()
+}
+
+export async function getCalendarEvents(days = 14): Promise<CalendarEvents> {
+  const res = await fetch(`${BASE}/api/integrations/calendar/events?days=${days}`, {
+    headers: getHeaders(),
+  })
+  if (!res.ok) return parseError(res)
+  return res.json()
+}
+
+export async function createCalendarEvent(req: CreateEventRequest): Promise<CalendarEvent> {
+  const res = await fetch(`${BASE}/api/integrations/calendar/events`, {
+    method: 'POST', headers: getHeaders(), body: JSON.stringify(req),
+  })
+  if (!res.ok) return parseError(res)
+  return res.json()
+}
+
+// ── Text-to-Speech ──────────────────────────────────────────────
+
+export async function ttsAvailable(): Promise<boolean> {
+  try {
+    const res = await fetch(`${BASE}/api/tts/available`)
+    if (!res.ok) return false
+    return (await res.json()).available === true
+  } catch { return false }
+}
+
+export async function synthesizeSpeech(text: string): Promise<string | null> {
+  try {
+    const res = await fetch(`${BASE}/api/tts/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text }),
+    })
+    if (!res.ok) return null
+    return (await res.json()).audio as string
+  } catch { return null }
 }
 
 export async function getPlan(req: PlanRequest): Promise<PlanResponse> {

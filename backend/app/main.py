@@ -17,6 +17,9 @@ from .runtime import key_manager, settings
 from .core.db import init_db
 from .api import auth
 from .api import admin as admin_router
+from .api import google as google_router
+from .api import integrations as integrations_router
+from .api import tts as tts_router
 from fastapi import Depends
 
 log = get_logger("api")
@@ -47,7 +50,10 @@ app.add_middleware(
 )
 
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
+app.include_router(google_router.router, prefix="/api/auth/google", tags=["google-oauth"])
 app.include_router(admin_router.router, prefix="/api/admin", tags=["admin"])
+app.include_router(integrations_router.router, prefix="/api/integrations", tags=["integrations"])
+app.include_router(tts_router.router, prefix="/api/tts", tags=["tts"])
 
 
 @app.get("/health")

@@ -1,28 +1,39 @@
 import { useState } from 'react'
-import { motion } from 'framer-motion'
 import { Link, useNavigate } from 'react-router-dom'
-import { registerUser, loginUser } from '../api'
+import { motion } from 'framer-motion'
+import { registerUser, loginUser, googleLoginUrl } from '../api'
 import { useAuth } from '../context/AuthContext'
+import { MavrickShell } from '../components/pixel/MavrickShell'
+import { RobotMascot } from '../components/pixel/RobotMascot'
+import { AuthField } from '../components/pixel/AuthField'
+import { BrandMark } from '../components/pixel/BrandMark'
+import { UserIcon, CalendarIcon, MailIcon, PhoneIcon, LockIcon, CheckIcon, PlayIcon } from '../components/icons/PixelIcons'
 
 export function Register() {
   const [name, setName] = useState('')
+  const [age, setAge] = useState('')
   const [email, setEmail] = useState('')
+  const [phone, setPhone] = useState('')
   const [password, setPassword] = useState('')
+  const [confirm, setConfirm] = useState('')
+  const [agree, setAgree] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
   const { login } = useAuth()
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  async function submit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
+    if (!agree) { setError('Please accept the Terms of Service to continue.'); return }
+    if (password !== confirm) { setError("Passwords don't match."); return }
+    if (password.length < 6) { setError('Password must be at least 6 characters.'); return }
     setLoading(true)
     try {
       const userResp = await registerUser({ name, email, password })
-      // Auto login after register
-      const tokenData = await loginUser({ email, password })
-      login(tokenData.access_token, userResp)
-      navigate('/app')
+      const t = await loginUser({ email, password })
+      login(t.access_token, userResp)
+      navigate('/onboarding')
     } catch (err: any) {
       setError(err.message || 'Registration failed')
     } finally {
@@ -31,64 +42,51 @@ export function Register() {
   }
 
   return (
-    <div style={{ minHeight: '100dvh', display: 'grid', placeItems: 'center', padding: 20 }}>
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.95 }}
-        className="glass-card"
-        style={{ width: '100%', maxWidth: 400, padding: 40 }}
+    <MavrickShell>
+      <div className="mvk-hero">
+        <RobotMascot size={54} />
+        <div className="mvk-hero-word">MAVRICK</div>
+        <div className="mvk-badge">AI CRISIS COMMANDER</div>
+        <div className="mvk-hero-sub">Turn <span className="mvk-coral">Panic</span> into a <span className="mvk-coral">Plan</span>. Instantly.</div>
+      </div>
+
+      <motion.form
+        className="mvk-card"
+        onSubmit={submit}
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
       >
-        <div style={{ textAlign: 'center', marginBottom: 28 }}>
-          <div className="brand-mark" style={{ margin: '0 auto 18px' }}>M</div>
-          <h2 style={{ margin: 0, fontSize: 13, fontWeight: 400, fontFamily: "'Press Start 2P', cursive", letterSpacing: '0.04em', lineHeight: 1.6 }}>CREATE ACCOUNT</h2>
-          <p style={{ color: 'var(--text-secondary)', margin: '10px 0 0', fontSize: 13 }}>Start turning panic into actionable plans.</p>
+        <div className="mvk-sec-head"><span className="mvk-sec-title">CREATE YOUR ACCOUNT</span></div>
+        <div className="mvk-card-subtitle">Join Mavrick and let's save your time.</div>
+
+        <div className="mvk-form">
+          <AuthField icon={<UserIcon size={16} color="#E85D50" />} label="Full Name" placeholder="Enter your full name" value={name} onChange={setName} />
+          <AuthField icon={<CalendarIcon size={16} color="#E85D50" />} label="Age" placeholder="Enter your age" type="number" value={age} onChange={setAge} />
+          <AuthField icon={<MailIcon size={16} color="#E85D50" />} label="Email" placeholder="Enter your email address" type="email" value={email} onChange={setEmail} />
+          <AuthField icon={<PhoneIcon size={16} color="#E85D50" />} label="Phone Number" placeholder="Enter your phone number" value={phone} onChange={setPhone} />
+          <AuthField icon={<LockIcon size={16} color="#E85D50" />} label="Password" placeholder="Create a strong password" value={password} onChange={setPassword} password />
+          <AuthField icon={<LockIcon size={16} color="#E85D50" />} label="Confirm Password" placeholder="Re-enter your password" value={confirm} onChange={setConfirm} password />
         </div>
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          <div className="field">
-            <label>Name</label>
-            <input 
-              type="text" 
-              className="num-input" 
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-            />
-          </div>
-          <div className="field">
-            <label>Email</label>
-            <input 
-              type="email" 
-              className="num-input" 
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
-          <div className="field">
-            <label>Password</label>
-            <input 
-              type="password" 
-              className="num-input" 
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              minLength={6}
-            />
-          </div>
+        <button type="button" className="mvk-check-row" onClick={() => setAgree(a => !a)} style={{ marginTop: 14 }}>
+          <span className={`mvk-checkbox ${agree ? 'on' : ''}`}>{agree && <CheckIcon size={10} color="#FFF6E6" />}</span>
+          I agree to the <span className="mvk-coral">Terms of Service</span>
+        </button>
 
-          {error && <div className="form-error">{error}</div>}
+        {error && <div className="mvk-error">{error}</div>}
 
-          <button type="submit" className="panic-btn" disabled={loading} style={{ marginTop: 8 }}>
-            {loading ? 'Creating account...' : 'Create Account'}
-          </button>
-        </form>
+        <button type="submit" className="mvk-save-btn" disabled={loading}>
+          <PlayIcon size={16} color="#FFF6E6" /> {loading ? 'CREATING…' : 'CREATE ACCOUNT'}
+        </button>
 
-        <p style={{ textAlign: 'center', marginTop: 24, fontSize: 14, color: 'var(--text-secondary)' }}>
-          Already have an account? <Link to="/login" style={{ color: 'var(--accent-light)', textDecoration: 'none', fontWeight: 600 }}>Sign in</Link>
-        </p>
-      </motion.div>
-    </div>
+        <div className="mvk-or"><span>OR</span></div>
+
+        <button type="button" className="mvk-social-btn" onClick={() => { window.location.href = googleLoginUrl() }}><BrandMark provider="google" size={20} /> SIGN UP WITH GOOGLE</button>
+        <button type="button" className="mvk-social-btn mvk-social-disabled" disabled title="Coming soon"><BrandMark provider="microsoft" size={20} /> SIGN UP WITH MICROSOFT</button>
+
+        <div className="mvk-auth-foot">Already have an account? <Link to="/login" className="mvk-auth-link">Login</Link></div>
+      </motion.form>
+    </MavrickShell>
   )
 }

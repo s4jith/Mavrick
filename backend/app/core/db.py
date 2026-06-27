@@ -1,7 +1,7 @@
-import os
 from motor.motor_asyncio import AsyncIOMotorClient
+from ..config import settings  # ensures .env is loaded before we read MONGO_URI
 
-MONGO_URI = os.getenv("MONGO_URI")
+MONGO_URI = settings.mongo_uri
 
 client = AsyncIOMotorClient(MONGO_URI)
 database = client.mavrick_db

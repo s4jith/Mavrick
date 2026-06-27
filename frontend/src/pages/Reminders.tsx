@@ -1,4 +1,7 @@
 import { useEffect, useState } from 'react'
+import { motion } from 'framer-motion'
+import { MavrickShell } from '../components/pixel/MavrickShell'
+import { BrandHeader } from '../components/pixel/BrandHeader'
 import { PlusIcon, TrashIcon, CheckIcon, BellIcon, CloseIcon, RefreshIcon } from '../components/icons/PixelIcons'
 
 export interface Reminder {
@@ -12,7 +15,7 @@ export interface Reminder {
 }
 
 const STORAGE_KEY = 'mavrick_reminders'
-const PRIORITY_COLOR = { high: '#f72585', medium: '#b5179e', low: '#4361ee' }
+const PRIORITY_COLOR = { high: '#E85D50', medium: '#B5179E', low: '#4361EE' }
 const PRIORITY_LABEL = { high: 'HIGH', medium: 'MED', low: 'LOW' }
 
 function loadReminders(): Reminder[] {
@@ -42,246 +45,112 @@ export function Reminders() {
 
   function add() {
     if (!form.title.trim()) return
-    const newItem: Reminder = {
-      ...form,
-      id: Date.now().toString(36),
-      created_at: new Date().toISOString(),
-      completed: false,
-    }
-    persist([newItem, ...items])
-    setForm({ ...BLANK })
-    setShowAdd(false)
+    persist([{ ...form, id: Date.now().toString(36), created_at: new Date().toISOString(), completed: false }, ...items])
+    setForm({ ...BLANK }); setShowAdd(false)
   }
-
-  function toggle(id: string) {
-    persist(items.map(r => r.id === id ? { ...r, completed: !r.completed } : r))
-  }
-
-  function remove(id: string) {
-    persist(items.filter(r => r.id !== id))
-  }
-
+  function toggle(id: string) { persist(items.map(r => r.id === id ? { ...r, completed: !r.completed } : r)) }
+  function remove(id: string) { persist(items.filter(r => r.id !== id)) }
   function startEdit(r: Reminder) {
     setEditId(r.id)
     setEditForm({ title: r.title, description: r.description, due_date: r.due_date, priority: r.priority })
   }
-
   function saveEdit() {
     if (!editForm.title.trim()) return
     persist(items.map(r => r.id === editId ? { ...r, ...editForm } : r))
     setEditId(null)
   }
 
-  function cancelEdit() { setEditId(null) }
-
-  const filtered = items.filter(r =>
-    filter === 'all' ? true : filter === 'active' ? !r.completed : r.completed
-  )
+  const filtered = items.filter(r => filter === 'all' ? true : filter === 'active' ? !r.completed : r.completed)
   const activeCount = items.filter(r => !r.completed).length
-  const doneCount   = items.filter(r => r.completed).length
-
-  const isOverdue = (r: Reminder) =>
-    !r.completed && r.due_date && new Date(r.due_date) < new Date()
+  const doneCount = items.filter(r => r.completed).length
+  const isOverdue = (r: Reminder) => !r.completed && r.due_date && new Date(r.due_date) < new Date()
 
   return (
-    <div className="remind-page">
-      {/* Header */}
-      <div className="remind-header">
-        <div>
-          <div style={{ fontFamily: "'Press Start 2P', cursive", fontSize: 11, color: 'var(--text-primary)', marginBottom: 4 }}>
-            REMINDERS
-          </div>
-          <div style={{ fontSize: 13, color: 'var(--text-tertiary)' }}>
-            {activeCount} active · {doneCount} done
-          </div>
-        </div>
-        <button className="rmd-add-btn" onClick={() => setShowAdd(!showAdd)}>
-          <PlusIcon size={14} /> ADD
+    <MavrickShell active="home">
+      <BrandHeader />
+
+      <div className="mvk-page-title">
+        <BellIcon size={18} color="#E85D50" />
+        <span className="mvk-page-title-text">REMINDERS</span>
+      </div>
+      <div className="mvk-page-sub">{activeCount} active · {doneCount} done</div>
+
+      <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
+        <button className="mvk-save-btn" style={{ marginTop: 0 }} onClick={() => setShowAdd(s => !s)}>
+          <PlusIcon size={15} color="#FFF6E6" /> ADD REMINDER
         </button>
-      </div>
 
-      {/* Add form */}
-      {showAdd && (
-        <div className="rmd-add-form px-card">
-          <div className="rmd-form-title">
-            <BellIcon size={14} color="var(--px-purple)" /> NEW REMINDER
-          </div>
-          <div className="rmd-field-row">
-            <div className="rmd-field">
-              <label className="rmd-label">TITLE *</label>
-              <input
-                className="rmd-input"
-                placeholder="What do you need to remember?"
-                value={form.title}
-                onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
-                onKeyDown={e => e.key === 'Enter' && add()}
-              />
+        {showAdd && (
+          <div className="mvk-card mvk-card-pad" style={{ marginTop: 12 }}>
+            <input className="mvk-textarea" style={{ minHeight: 'auto' }} placeholder="What to remember?"
+              value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} onKeyDown={e => e.key === 'Enter' && add()} />
+            <textarea className="mvk-textarea" style={{ marginTop: 10, minHeight: 64 }} placeholder="Notes (optional)…"
+              value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} />
+            <input type="datetime-local" className="mvk-textarea" style={{ marginTop: 10, minHeight: 'auto' }}
+              value={form.due_date} onChange={e => setForm(f => ({ ...f, due_date: e.target.value }))} />
+            <div className="mvk-pills" style={{ marginTop: 10, gridTemplateColumns: 'repeat(3,1fr)' }}>
+              {(['high', 'medium', 'low'] as const).map(p => (
+                <button key={p} className={`mvk-pill ${form.priority === p ? 'active' : ''}`} onClick={() => setForm(f => ({ ...f, priority: p }))}>
+                  {PRIORITY_LABEL[p]}
+                </button>
+              ))}
+            </div>
+            <div className="mvk-rescue-actions" style={{ marginTop: 12 }}>
+              <button className="mvk-btn mvk-btn-outline mvk-btn-sm" onClick={() => setShowAdd(false)}><CloseIcon size={12} /> CANCEL</button>
+              <button className="mvk-btn mvk-btn-coral mvk-btn-sm" onClick={add}><CheckIcon size={12} color="#FFF6E6" /> SAVE</button>
             </div>
           </div>
-          <div className="rmd-field">
-            <label className="rmd-label">DESCRIPTION</label>
-            <textarea
-              className="rmd-input rmd-textarea"
-              placeholder="Additional notes…"
-              value={form.description}
-              onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
-            />
-          </div>
-          <div className="rmd-field-row">
-            <div className="rmd-field">
-              <label className="rmd-label">DUE DATE</label>
-              <input
-                type="datetime-local"
-                className="rmd-input"
-                value={form.due_date}
-                onChange={e => setForm(f => ({ ...f, due_date: e.target.value }))}
-              />
-            </div>
-            <div className="rmd-field">
-              <label className="rmd-label">PRIORITY</label>
-              <div className="rmd-priority-row">
-                {(['high', 'medium', 'low'] as const).map(p => (
-                  <button
-                    key={p}
-                    className={`rmd-priority-btn ${form.priority === p ? 'active' : ''}`}
-                    style={{ '--p-color': PRIORITY_COLOR[p] } as React.CSSProperties}
-                    onClick={() => setForm(f => ({ ...f, priority: p }))}
-                  >
-                    {PRIORITY_LABEL[p]}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-          <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
-            <button className="rmd-save-btn" onClick={add}>
-              <PlusIcon size={12} /> Save Reminder
-            </button>
-            <button className="rmd-cancel-btn" onClick={() => setShowAdd(false)}>
-              <CloseIcon size={12} /> Cancel
-            </button>
-          </div>
-        </div>
-      )}
+        )}
 
-      {/* Filter tabs */}
-      <div className="rmd-filter-bar">
-        {(['all', 'active', 'done'] as Filter[]).map(f => (
-          <button
-            key={f}
-            className={`rmd-filter-btn ${filter === f ? 'active' : ''}`}
-            onClick={() => setFilter(f)}
-          >
-            {f.toUpperCase()}
-          </button>
-        ))}
-      </div>
-
-      {/* List */}
-      {filtered.length === 0 ? (
-        <div className="rmd-empty">
-          <BellIcon size={32} color="var(--border)" />
-          <p>No reminders {filter !== 'all' ? `in "${filter}"` : ''}.</p>
-          {filter === 'all' && (
-            <button className="rmd-add-btn" style={{ marginTop: 12 }} onClick={() => setShowAdd(true)}>
-              <PlusIcon size={12} /> Add First Reminder
-            </button>
-          )}
-        </div>
-      ) : (
-        <div className="rmd-list">
-          {filtered.map(r => (
-            <div
-              key={r.id}
-              className={`rmd-item px-card ${r.completed ? 'rmd-done' : ''} ${isOverdue(r) ? 'rmd-overdue' : ''}`}
-            >
-              {editId === r.id ? (
-                /* ── Inline Edit Form ── */
-                <div className="rmd-edit-form">
-                  <input
-                    className="rmd-input"
-                    value={editForm.title}
-                    onChange={e => setEditForm(f => ({ ...f, title: e.target.value }))}
-                    autoFocus
-                  />
-                  <textarea
-                    className="rmd-input rmd-textarea"
-                    value={editForm.description}
-                    onChange={e => setEditForm(f => ({ ...f, description: e.target.value }))}
-                  />
-                  <div className="rmd-field-row">
-                    <input
-                      type="datetime-local"
-                      className="rmd-input"
-                      value={editForm.due_date}
-                      onChange={e => setEditForm(f => ({ ...f, due_date: e.target.value }))}
-                    />
-                    <div className="rmd-priority-row">
-                      {(['high', 'medium', 'low'] as const).map(p => (
-                        <button
-                          key={p}
-                          className={`rmd-priority-btn ${editForm.priority === p ? 'active' : ''}`}
-                          style={{ '--p-color': PRIORITY_COLOR[p] } as React.CSSProperties}
-                          onClick={() => setEditForm(f => ({ ...f, priority: p }))}
-                        >
-                          {PRIORITY_LABEL[p]}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-                    <button className="rmd-save-btn" onClick={saveEdit}><CheckIcon size={12} /> Save</button>
-                    <button className="rmd-cancel-btn" onClick={cancelEdit}><CloseIcon size={12} /> Cancel</button>
-                  </div>
-                </div>
-              ) : (
-                /* ── Normal Row ── */
-                <div className="rmd-row">
-                  <button
-                    className={`rmd-check ${r.completed ? 'checked' : ''}`}
-                    onClick={() => toggle(r.id)}
-                    title={r.completed ? 'Mark active' : 'Mark complete'}
-                  >
-                    {r.completed && <CheckIcon size={12} color="white" />}
-                  </button>
-                  <div className="rmd-body" onClick={() => startEdit(r)} role="button" tabIndex={0} onKeyDown={e => e.key === 'Enter' && startEdit(r)}>
-                    <div className="rmd-item-title">
-                      <span
-                        className="rmd-priority-dot"
-                        style={{ background: PRIORITY_COLOR[r.priority] }}
-                        title={`Priority: ${r.priority}`}
-                      />
-                      {r.title}
-                    </div>
-                    {r.description && (
-                      <div className="rmd-item-desc">{r.description}</div>
-                    )}
-                    <div className="rmd-item-meta">
-                      {r.due_date && (
-                        <span className={`rmd-due ${isOverdue(r) ? 'overdue' : ''}`}>
-                          {isOverdue(r) ? 'OVERDUE: ' : 'Due: '}
-                          {new Date(r.due_date).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                        </span>
-                      )}
-                      <span className="rmd-created">
-                        Added {new Date(r.created_at).toLocaleDateString()}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="rmd-actions">
-                    <button className="rmd-icon-btn" onClick={() => startEdit(r)} title="Edit">
-                      <RefreshIcon size={12} />
-                    </button>
-                    <button className="rmd-icon-btn rmd-delete" onClick={() => remove(r.id)} title="Delete">
-                      <TrashIcon size={12} />
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
+        <div className="mvk-pills" style={{ gridTemplateColumns: 'repeat(3,1fr)', marginTop: 14, marginBottom: 12 }}>
+          {(['all', 'active', 'done'] as Filter[]).map(f => (
+            <button key={f} className={`mvk-pill ${filter === f ? 'active' : ''}`} onClick={() => setFilter(f)}>{f.toUpperCase()}</button>
           ))}
         </div>
-      )}
-    </div>
+
+        {filtered.length === 0 ? (
+          <div className="mvk-card mvk-card-pad" style={{ textAlign: 'center', padding: 28 }}>
+            <BellIcon size={28} color="#5FD0E6" />
+            <div style={{ fontSize: 8, color: 'var(--mvk-label)', marginTop: 12, lineHeight: 1.7 }}>No reminders here yet.</div>
+          </div>
+        ) : (
+          <div className="mvk-list">
+            {filtered.map(r => editId === r.id ? (
+              <div key={r.id} className="mvk-card mvk-card-pad">
+                <input className="mvk-textarea" style={{ minHeight: 'auto' }} value={editForm.title} onChange={e => setEditForm(f => ({ ...f, title: e.target.value }))} autoFocus />
+                <input type="datetime-local" className="mvk-textarea" style={{ marginTop: 10, minHeight: 'auto' }} value={editForm.due_date} onChange={e => setEditForm(f => ({ ...f, due_date: e.target.value }))} />
+                <div className="mvk-rescue-actions" style={{ marginTop: 12 }}>
+                  <button className="mvk-btn mvk-btn-outline mvk-btn-sm" onClick={() => setEditId(null)}><CloseIcon size={12} /> CANCEL</button>
+                  <button className="mvk-btn mvk-btn-coral mvk-btn-sm" onClick={saveEdit}><CheckIcon size={12} color="#FFF6E6" /> SAVE</button>
+                </div>
+              </div>
+            ) : (
+              <div key={r.id} className={`mvk-list-item ${r.completed ? 'mvk-rmd-done' : ''}`} style={isOverdue(r) ? { borderColor: 'rgba(232,93,80,0.45)' } : undefined}>
+                <button className={`mvk-rmd-check ${r.completed ? 'on' : ''}`} onClick={() => toggle(r.id)} aria-label="Toggle complete">
+                  {r.completed && <CheckIcon size={11} color="#fff" />}
+                </button>
+                <div className="mvk-li-body" onClick={() => startEdit(r)} role="button" tabIndex={0}>
+                  <div className="mvk-li-title" style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                    <span style={{ width: 7, height: 7, borderRadius: 2, background: PRIORITY_COLOR[r.priority] }} />
+                    {r.title}
+                  </div>
+                  {r.description && <div className="mvk-li-sub" style={{ color: 'var(--mvk-muted)' }}>{r.description}</div>}
+                  {r.due_date && (
+                    <div className="mvk-li-sub" style={{ color: isOverdue(r) ? '#E85D50' : '#7A8A78' }}>
+                      {isOverdue(r) ? 'OVERDUE · ' : 'Due · '}
+                      {new Date(r.due_date).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                    </div>
+                  )}
+                </div>
+                <div style={{ display: 'flex', gap: 6 }}>
+                  <button className="mvk-rmd-icon" onClick={() => startEdit(r)} aria-label="Edit"><RefreshIcon size={11} /></button>
+                  <button className="mvk-rmd-icon mvk-rmd-del" onClick={() => remove(r.id)} aria-label="Delete"><TrashIcon size={11} /></button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </motion.div>
+    </MavrickShell>
   )
 }

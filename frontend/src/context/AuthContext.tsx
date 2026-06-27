@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 import type { UserResponse } from '../types';
 
 const ADMIN_EMAILS = new Set([
@@ -16,23 +16,24 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<UserResponse | null>(null);
-  const [token, setToken] = useState<string | null>(null);
+// Read persisted session synchronously so the very first render already knows
+// whether the user is authenticated — prevents auth guards from bouncing a
+// logged-in user to /login on a page refresh.
+function readStored(): { token: string | null; user: UserResponse | null } {
+  try {
+    const token = localStorage.getItem('mavrick_token');
+    const rawUser = localStorage.getItem('mavrick_user');
+    if (token && rawUser) return { token, user: JSON.parse(rawUser) };
+  } catch {
+    localStorage.removeItem('mavrick_token');
+    localStorage.removeItem('mavrick_user');
+  }
+  return { token: null, user: null };
+}
 
-  useEffect(() => {
-    const storedToken = localStorage.getItem('mavrick_token');
-    const storedUser = localStorage.getItem('mavrick_user');
-    if (storedToken && storedUser) {
-      try {
-        setToken(storedToken);
-        setUser(JSON.parse(storedUser));
-      } catch {
-        localStorage.removeItem('mavrick_token');
-        localStorage.removeItem('mavrick_user');
-      }
-    }
-  }, []);
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = useState<UserResponse | null>(() => readStored().user);
+  const [token, setToken] = useState<string | null>(() => readStored().token);
 
   const login = (newToken: string, newUser: UserResponse) => {
     setToken(newToken);

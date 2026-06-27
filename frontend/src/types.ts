@@ -102,6 +102,54 @@ export interface UserResponse {
   name: string
 }
 
+// ── Google integrations ─────────────────────────────────────────
+
+export interface IntegrationStatus {
+  connected: boolean
+  scopes: string[]
+  gmail: boolean
+  calendar: boolean
+  profile: { sub?: string; name?: string; picture?: string; email?: string }
+}
+
+export interface GmailMessage {
+  id: string
+  subject: string
+  from: string
+  date: string
+  snippet: string
+  looks_urgent: boolean
+}
+
+export interface GmailScan {
+  count: number
+  messages: GmailMessage[]
+  urgent: GmailMessage[]
+}
+
+export interface CalendarEvent {
+  id: string
+  title: string
+  start: string
+  end: string
+  all_day: boolean
+  location?: string | null
+  html_link?: string
+}
+
+export interface CalendarEvents {
+  count: number
+  events: CalendarEvent[]
+}
+
+export interface CreateEventRequest {
+  title: string
+  start: string
+  minutes?: number
+  description?: string
+  confirm: boolean
+}
+
 // ── Admin types ─────────────────────────────────────────────────
 
 export interface AdminUser {
