@@ -7,7 +7,6 @@ import {
   SirenIcon, TimerIcon, BookIcon, HourglassIcon,
   SearchIcon, ImageIcon, MicIcon, CalendarIcon, RocketIcon,
 } from '../components/icons/PixelIcons'
-import { createCalendarEvent, ApiError } from '../api'
 import type { PlanResponse } from '../types'
 
 /* ── Fallback demo plan (matches the reference screen) ── */
@@ -63,12 +62,9 @@ function stepIcon(title: string, detail: string) {
   return BookIcon
 }
 
-type CalState = 'idle' | 'adding' | 'added' | 'error'
-
 export function AIRescuePlan() {
   const navigate = useNavigate()
-  const [calState, setCalState] = useState<CalState>('idle')
-  const [calMsg, setCalMsg] = useState<string | null>(null)
+  const [calAdded, setCalAdded] = useState(false)
 
   const plan = useMemo<PlanResponse>(() => {
     try {
@@ -88,34 +84,6 @@ export function AIRescuePlan() {
 
   const segCount = 14
   const filled = Math.round((plan.urgency_score / 100) * segCount)
-
-  // HITL: only writes to Google Calendar on this explicit, confirmed click.
-  async function addToCalendar() {
-    if (calState === 'adding' || calState === 'added') return
-    setCalState('adding'); setCalMsg(null)
-    const title = `MAVRICK: ${cap(plan.plan.sub_type)} rescue plan`
-    const description = plan.plan.steps
-      .map(s => `${s.order}. ${s.title} (${s.minutes}m) — ${s.detail}`)
-      .join('\n')
-    try {
-      const ev = await createCalendarEvent({
-        title,
-        start: new Date().toISOString(),
-        minutes: plan.total_planned_minutes,
-        description,
-        confirm: true,
-      })
-      setCalState('added')
-      setCalMsg(ev.html_link ? 'Added to your Google Calendar.' : 'Added to your calendar.')
-    } catch (err) {
-      setCalState('error')
-      if (err instanceof ApiError && err.status === 409) {
-        setCalMsg('Connect your Google account first (Connect screen).')
-      } else {
-        setCalMsg(err instanceof Error ? err.message : 'Could not add to calendar.')
-      }
-    }
-  }
 
   return (
     <MavrickShell active="execute">
@@ -195,19 +163,13 @@ export function AIRescuePlan() {
 
         {/* ── Actions ── */}
         <div className="mvk-rescue-actions">
-          <button className="mvk-btn mvk-btn-outline mvk-btn-sm" onClick={addToCalendar} disabled={calState === 'adding' || calState === 'added'}>
-            <CalendarIcon size={15} color="#2A8090" />{' '}
-            {calState === 'adding' ? 'ADDING…' : calState === 'added' ? 'ADDED ✓' : 'ADD TO CALENDAR'}
+          <button className="mvk-btn mvk-btn-outline mvk-btn-sm" onClick={() => setCalAdded(true)}>
+            <CalendarIcon size={15} color="#2A8090" /> {calAdded ? 'ADDED ✓' : 'ADD TO CALENDAR'}
           </button>
           <button className="mvk-btn mvk-btn-coral mvk-btn-sm" onClick={() => navigate('/app/execute')}>
             <RocketIcon size={15} color="#FFF6E6" /> START MISSION
           </button>
         </div>
-        {calMsg && (
-          <div className={calState === 'error' ? 'mvk-error' : 'mvk-cal-ok'} style={{ marginTop: 10 }}>
-            {calMsg}
-          </div>
-        )}
 
         <div className="mvk-crush">
           <span className="mvk-coral">✦</span> I've got your back. Let's crush this! <span className="mvk-coral">✦</span>

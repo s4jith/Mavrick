@@ -1,9 +1,10 @@
-import { useMemo } from 'react'
+import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { MavrickShell } from '../components/pixel/MavrickShell'
 import { BrandHeader } from '../components/pixel/BrandHeader'
 import { RobotMascot } from '../components/pixel/RobotMascot'
-import { loadHistory } from '../components/HistoryPanel'
+import { getHistory } from '../api'
+import type { CrisisHistory } from '../types'
 import { ChartIcon, ShieldIcon, TimerIcon, ClipboardIcon, AlarmIcon } from '../components/icons/PixelIcons'
 
 function mode(arr: string[]): string {
@@ -13,7 +14,8 @@ function mode(arr: string[]): string {
 }
 
 export function Insights() {
-  const history = useMemo(() => loadHistory(), [])
+  const [history, setHistory] = useState<CrisisHistory[]>([])
+  useEffect(() => { getHistory().then(setHistory).catch(() => setHistory([])) }, [])
   const total = history.length
 
   const crisesSolved = total || 42

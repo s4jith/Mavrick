@@ -3,27 +3,11 @@ import { motion } from 'framer-motion'
 import { MavrickShell } from '../components/pixel/MavrickShell'
 import { BrandHeader } from '../components/pixel/BrandHeader'
 import { PlusIcon, TrashIcon, CheckIcon, BellIcon, CloseIcon, RefreshIcon } from '../components/icons/PixelIcons'
+import { getReminders, addReminder, updateReminder, deleteReminder } from '../api'
+import type { Reminder } from '../types'
 
-export interface Reminder {
-  id: string
-  title: string
-  description: string
-  due_date: string
-  priority: 'low' | 'medium' | 'high'
-  completed: boolean
-  created_at: string
-}
-
-const STORAGE_KEY = 'mavrick_reminders'
 const PRIORITY_COLOR = { high: '#E85D50', medium: '#B5179E', low: '#4361EE' }
 const PRIORITY_LABEL = { high: 'HIGH', medium: 'MED', low: 'LOW' }
-
-function loadReminders(): Reminder[] {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '[]') } catch { return [] }
-}
-function saveReminders(list: Reminder[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(list))
-}
 
 const BLANK: Omit<Reminder, 'id' | 'created_at' | 'completed'> = {
   title: '', description: '', due_date: '', priority: 'medium',
@@ -39,24 +23,37 @@ export function Reminders() {
   const [filter, setFilter] = useState<Filter>('all')
   const [showAdd, setShowAdd] = useState(false)
 
-  useEffect(() => { setItems(loadReminders()) }, [])
+  useEffect(() => { getReminders().then(setItems).catch(() => setItems([])) }, [])
 
-  function persist(next: Reminder[]) { setItems(next); saveReminders(next) }
-
-  function add() {
+  async function add() {
     if (!form.title.trim()) return
-    persist([{ ...form, id: Date.now().toString(36), created_at: new Date().toISOString(), completed: false }, ...items])
+    try {
+      const saved = await addReminder({ ...form, completed: false })
+      setItems(prev => [saved, ...prev])
+    } catch { /* ignore */ }
     setForm({ ...BLANK }); setShowAdd(false)
   }
-  function toggle(id: string) { persist(items.map(r => r.id === id ? { ...r, completed: !r.completed } : r)) }
-  function remove(id: string) { persist(items.filter(r => r.id !== id)) }
+  async function toggle(id: string) {
+    const cur = items.find(r => r.id === id); if (!cur) return
+    setItems(prev => prev.map(r => r.id === id ? { ...r, completed: !r.completed } : r))
+    try { await updateReminder(id, { completed: !cur.completed }) }
+    catch { setItems(prev => prev.map(r => r.id === id ? { ...r, completed: cur.completed } : r)) }
+  }
+  async function remove(id: string) {
+    const prev = items
+    setItems(p => p.filter(r => r.id !== id))
+    try { await deleteReminder(id) } catch { setItems(prev) }
+  }
   function startEdit(r: Reminder) {
     setEditId(r.id)
     setEditForm({ title: r.title, description: r.description, due_date: r.due_date, priority: r.priority })
   }
-  function saveEdit() {
-    if (!editForm.title.trim()) return
-    persist(items.map(r => r.id === editId ? { ...r, ...editForm } : r))
+  async function saveEdit() {
+    if (!editForm.title.trim() || !editId) return
+    try {
+      const saved = await updateReminder(editId, { ...editForm })
+      setItems(prev => prev.map(r => r.id === editId ? saved : r))
+    } catch { /* ignore */ }
     setEditId(null)
   }
 

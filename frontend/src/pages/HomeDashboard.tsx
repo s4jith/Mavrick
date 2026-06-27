@@ -8,13 +8,10 @@ import {
   FireIcon, WarningIcon, ZapIcon, BookIcon, BriefcaseIcon,
   HourglassIcon, RocketIcon, MicIcon, PlusIcon, CalendarIcon,
 } from '../components/icons/PixelIcons'
-import type { Reminder } from './Reminders'
+import { getReminders } from '../api'
+import type { Reminder } from '../types'
 
 /* ── Data helpers ───────────────────────────────────────────── */
-
-function loadReminders(): Reminder[] {
-  try { return JSON.parse(localStorage.getItem('mavrick_reminders') ?? '[]') } catch { return [] }
-}
 
 type Deco = { Icon: typeof BookIcon; color: string }
 
@@ -71,7 +68,7 @@ export function HomeDashboard() {
   const navigate = useNavigate()
   const [reminders, setReminders] = useState<Reminder[]>([])
 
-  useEffect(() => { setReminders(loadReminders()) }, [])
+  useEffect(() => { getReminders().then(setReminders).catch(() => setReminders([])) }, [])
 
   const active = reminders.filter(r => !r.completed)
   const score = crisisScore(active)

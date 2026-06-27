@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { registerUser, loginUser, googleLoginUrl } from '../api'
-import { useAuth } from '../context/AuthContext'
+import { createUserWithEmailAndPassword, updateProfile, signInWithPopup } from 'firebase/auth'
+import { auth, googleProvider, firebaseAuthError } from '../firebase'
 import { MavrickShell } from '../components/pixel/MavrickShell'
 import { RobotMascot } from '../components/pixel/RobotMascot'
 import { AuthField } from '../components/pixel/AuthField'
@@ -20,7 +20,6 @@ export function Register() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
-  const { login } = useAuth()
 
   async function submit(e: React.FormEvent) {
     e.preventDefault()
@@ -30,12 +29,26 @@ export function Register() {
     if (password.length < 6) { setError('Password must be at least 6 characters.'); return }
     setLoading(true)
     try {
-      const userResp = await registerUser({ name, email, password })
-      const t = await loginUser({ email, password })
-      login(t.access_token, userResp)
+      const cred = await createUserWithEmailAndPassword(auth, email.trim(), password)
+      await updateProfile(cred.user, { displayName: name })
+      // Force a token refresh so AuthContext picks up the new displayName.
+      await cred.user.getIdToken(true)
       navigate('/onboarding')
-    } catch (err: any) {
-      setError(err.message || 'Registration failed')
+    } catch (err) {
+      setError(firebaseAuthError(err))
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function googleSignUp() {
+    setError(null)
+    setLoading(true)
+    try {
+      await signInWithPopup(auth, googleProvider)
+      navigate('/onboarding')
+    } catch (err) {
+      setError(firebaseAuthError(err))
     } finally {
       setLoading(false)
     }
@@ -82,7 +95,7 @@ export function Register() {
 
         <div className="mvk-or"><span>OR</span></div>
 
-        <button type="button" className="mvk-social-btn" onClick={() => { window.location.href = googleLoginUrl() }}><BrandMark provider="google" size={20} /> SIGN UP WITH GOOGLE</button>
+        <button type="button" className="mvk-social-btn" onClick={googleSignUp} disabled={loading}><BrandMark provider="google" size={20} /> SIGN UP WITH GOOGLE</button>
         <button type="button" className="mvk-social-btn mvk-social-disabled" disabled title="Coming soon"><BrandMark provider="microsoft" size={20} /> SIGN UP WITH MICROSOFT</button>
 
         <div className="mvk-auth-foot">Already have an account? <Link to="/login" className="mvk-auth-link">Login</Link></div>

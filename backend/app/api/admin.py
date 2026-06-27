@@ -2,19 +2,18 @@
 
 Protected by require_admin dependency — only emails listed in the
 ADMIN_EMAILS env var (default: teammistaketechnologies@gmail.com) can call
-these endpoints. Uses the same JWT as regular users; the server checks the
-email after decoding.
+these endpoints. Auth is the same Firebase ID token as regular users; the
+server checks the email after verifying the token. User data lives in Firestore.
 """
 from __future__ import annotations
 
+import asyncio
 import os
-from datetime import datetime
 
-from bson import ObjectId
 from fastapi import APIRouter, Depends, HTTPException
 
 from ..api.auth import get_current_user
-from ..core.db import users_collection
+from ..core import firestore_store as store
 from ..runtime import cache, key_manager
 
 router = APIRouter()
@@ -33,14 +32,11 @@ async def require_admin(current_user: dict = Depends(get_current_user)) -> dict:
 
 
 def _serialize_user(u: dict) -> dict:
-    created = u.get("created_at")
-    if isinstance(created, datetime):
-        created = created.isoformat()
     return {
-        "id": str(u["_id"]),
+        "id": u.get("uid", ""),
         "email": u.get("email", ""),
         "name": u.get("name", ""),
-        "created_at": created,
+        "created_at": u.get("created_at"),
     }
 
 
@@ -48,9 +44,7 @@ def _serialize_user(u: dict) -> dict:
 
 @router.get("/users")
 async def list_users(_admin: dict = Depends(require_admin)) -> list:
-    users = await users_collection.find(
-        {}, {"hashed_password": 0}
-    ).to_list(None)
+    users = await asyncio.to_thread(store.list_users)
     return [_serialize_user(u) for u in users]
 
 
@@ -59,12 +53,8 @@ async def delete_user(
     user_id: str,
     _admin: dict = Depends(require_admin),
 ) -> dict:
-    try:
-        oid = ObjectId(user_id)
-    except Exception:
-        raise HTTPException(status_code=400, detail="Invalid user ID")
-    result = await users_collection.delete_one({"_id": oid})
-    if result.deleted_count == 0:
+    deleted = await asyncio.to_thread(store.delete_user, user_id)
+    if not deleted:
         raise HTTPException(status_code=404, detail="User not found")
     return {"deleted": True, "id": user_id}
 
@@ -73,7 +63,7 @@ async def delete_user(
 
 @router.get("/stats")
 async def get_stats(_admin: dict = Depends(require_admin)) -> dict:
-    total_users = await users_collection.count_documents({})
+    total_users = await asyncio.to_thread(store.count_users)
     cache_size = len(cache)
     keys = key_manager.status()
     used_today = sum(k.get("used_today", 0) for k in keys)

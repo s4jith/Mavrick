@@ -80,20 +80,14 @@ export interface CrisisHistory {
   completed_at: string
 }
 
-export interface UserRegister {
-  email: string
-  password: string
-  name: string
-}
-
-export interface UserLogin {
-  email: string
-  password: string
-}
-
-export interface Token {
-  access_token: string
-  token_type: string
+export interface Reminder {
+  id: string
+  title: string
+  description: string
+  due_date: string
+  priority: 'low' | 'medium' | 'high'
+  completed: boolean
+  created_at: string
 }
 
 export interface UserResponse {
@@ -102,53 +96,17 @@ export interface UserResponse {
   name: string
 }
 
-// ── Google integrations ─────────────────────────────────────────
-
-export interface IntegrationStatus {
-  connected: boolean
-  scopes: string[]
-  gmail: boolean
-  calendar: boolean
-  profile: { sub?: string; name?: string; picture?: string; email?: string }
+export interface UserProfile {
+  uid: string
+  email: string
+  name: string
+  picture?: string | null
+  phone?: string
+  role?: string
+  created_at?: string
+  updated_at?: string
 }
 
-export interface GmailMessage {
-  id: string
-  subject: string
-  from: string
-  date: string
-  snippet: string
-  looks_urgent: boolean
-}
-
-export interface GmailScan {
-  count: number
-  messages: GmailMessage[]
-  urgent: GmailMessage[]
-}
-
-export interface CalendarEvent {
-  id: string
-  title: string
-  start: string
-  end: string
-  all_day: boolean
-  location?: string | null
-  html_link?: string
-}
-
-export interface CalendarEvents {
-  count: number
-  events: CalendarEvent[]
-}
-
-export interface CreateEventRequest {
-  title: string
-  start: string
-  minutes?: number
-  description?: string
-  confirm: boolean
-}
 
 // ── Admin types ─────────────────────────────────────────────────
 

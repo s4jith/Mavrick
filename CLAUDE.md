@@ -112,12 +112,12 @@ npm run dev
 - [x] Frontend: React PWA + Panic Mode screen wired to the live API
 - [x] Persistent SQLite cache — plans survive backend restarts (`backend/data/cache.db`)
 - [x] Degraded fallback — generic triage plan returned when all API keys exhausted (no 503)
-- [x] MongoDB (Atlas) user store + JWT auth (note: stack swapped Firestore → MongoDB)
-- [x] Google OAuth login + Gmail scan + Calendar read/write (HITL) + Cloud TTS coach voice
-  - Backend: `api/google.py` (oauth), `api/integrations.py`, `api/tts.py`; helpers in `core/google_oauth.py` + `core/google_store.py`. Google tokens stored on the Mongo user doc, auto-refreshed.
-  - Calendar writes require `confirm=true` (HITL rule). TTS falls back to browser speech if no `GOOGLE_TTS_API_KEY`.
-  - Requires Google Console: redirect URI `http://localhost:8000/api/auth/google/callback`, consent-screen scopes, and your email as a Test user. See README → Setup.
-- [ ] Server-side crisis-history persistence (still browser-local); Outlook OAuth; PWA push
+- [x] **Firebase Authentication** (Email/Password + Google) — frontend `firebase.ts` + `AuthContext`
+- [x] **Backend verifies Firebase ID tokens** with `firebase-admin` (`core/firebase_admin.py`, `api/auth.py`) — no JWT, no Mongo
+- [x] **Cloud Firestore** is the database — users, history, reminders, settings keyed by Firebase UID (`core/firestore_store.py`, `api/profile.py`, `api/userdata.py`). Admin SDK bypasses security rules.
+- [x] Cloud TTS coach voice (`api/tts.py`) with browser-speech fallback
+  - Migration removed Mongo/JWT/custom-OAuth and the Mongo-backed Gmail/Calendar integration. Backend needs `backend/service-account.json` + `FIREBASE_PROJECT_ID`; frontend needs `VITE_FIREBASE_*` in `frontend/.env`. See README → Setup.
+- [ ] Gmail/Calendar live sync (re-do Firebase-native); Outlook sign-in; PWA push; Firestore security rules
 
 ## Run the full product (two terminals)
 ```

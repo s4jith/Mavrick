@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
+import { updateProfile } from '../api'
 import { MavrickShell } from '../components/pixel/MavrickShell'
 import { RobotMascot } from '../components/pixel/RobotMascot'
 import { GraduationCapIcon, BriefcaseIcon, RocketIcon, PaletteIcon, PlayIcon } from '../components/icons/PixelIcons'
@@ -17,7 +18,7 @@ export function Onboarding() {
   const [selected, setSelected] = useState<string | null>(null)
 
   function cont() {
-    if (selected) localStorage.setItem('mavrick_role', selected)
+    if (selected) updateProfile({ role: selected }).catch(() => { /* non-fatal */ })
     navigate('/connect')
   }
 

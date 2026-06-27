@@ -1,11 +1,8 @@
-import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { MavrickShell } from '../components/pixel/MavrickShell'
 import { BrandHeader } from '../components/pixel/BrandHeader'
 import { RobotMascot } from '../components/pixel/RobotMascot'
 import { CalendarIcon, BookIcon, BriefcaseIcon, ZapIcon, PlayIcon } from '../components/icons/PixelIcons'
-import { getCalendarEvents } from '../api'
-import type { CalendarEvent } from '../types'
 
 const WEEKDAYS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT']
 const FIRST_WEEKDAY = 4   // May 1 2025 falls on Thursday
@@ -45,34 +42,8 @@ function buildCells() {
   return cells
 }
 
-function fmtEventTime(ev: CalendarEvent): string {
-  try {
-    const d = new Date(ev.start)
-    if (ev.all_day) return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ', All Day'
-    return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ', ' +
-      d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })
-  } catch { return ev.start }
-}
-
-function iconFor(title: string) {
-  const t = title.toLowerCase()
-  if (/(bill|pay|invoice|rent)/.test(t)) return { Icon: ZapIcon, color: TYPE_COLOR.bill }
-  if (/(meet|call|sync|standup|interview)/.test(t)) return { Icon: BriefcaseIcon, color: TYPE_COLOR.meeting }
-  if (/(due|deadline|exam|assignment|submit|project)/.test(t)) return { Icon: BookIcon, color: TYPE_COLOR.critical }
-  return { Icon: BriefcaseIcon, color: TYPE_COLOR.normal }
-}
-
 export function Calendar() {
   const cells = buildCells()
-  const [liveEvents, setLiveEvents] = useState<CalendarEvent[] | null>(null)
-
-  useEffect(() => {
-    getCalendarEvents(30)
-      .then(r => setLiveEvents(r.events))
-      .catch(() => setLiveEvents(null))   // not connected → keep demo
-  }, [])
-
-  const hasLive = !!liveEvents && liveEvents.length > 0
 
   return (
     <MavrickShell active="calendar">
@@ -126,35 +97,17 @@ export function Calendar() {
         {/* Events + AI suggestions */}
         <div className="mvk-cal-cols">
           <div className="mvk-card mvk-card-pad">
-            <div className="mvk-sec-head">
-              <span className="mvk-sec-title">{hasLive ? 'UPCOMING EVENTS' : 'EVENTS'}</span>
-              {hasLive && <span className="mvk-conn-badge on" style={{ fontSize: 6, padding: '3px 6px' }}>● LIVE</span>}
-            </div>
+            <div className="mvk-sec-head"><span className="mvk-sec-title">EVENTS</span></div>
             <div className="mvk-cal-events">
-              {hasLive ? (
-                liveEvents!.slice(0, 8).map((e, i) => {
-                  const { Icon, color } = iconFor(e.title)
-                  return (
-                    <div key={e.id || i} className="mvk-cal-event">
-                      <span className="mvk-cal-event-ico"><Icon size={14} color={color} /></span>
-                      <div>
-                        <div className="mvk-cal-event-title">{e.title}</div>
-                        <div className="mvk-cal-event-time">{fmtEventTime(e)}</div>
-                      </div>
-                    </div>
-                  )
-                })
-              ) : (
-                EVENTS.map((e, i) => (
-                  <div key={i} className="mvk-cal-event">
-                    <span className="mvk-cal-event-ico"><e.Icon size={14} color={TYPE_COLOR[e.type]} /></span>
-                    <div>
-                      <div className="mvk-cal-event-title">{e.title}</div>
-                      <div className="mvk-cal-event-time">{e.time}</div>
-                    </div>
+              {EVENTS.map((e, i) => (
+                <div key={i} className="mvk-cal-event">
+                  <span className="mvk-cal-event-ico"><e.Icon size={14} color={TYPE_COLOR[e.type]} /></span>
+                  <div>
+                    <div className="mvk-cal-event-title">{e.title}</div>
+                    <div className="mvk-cal-event-time">{e.time}</div>
                   </div>
-                ))
-              )}
+                </div>
+              ))}
             </div>
           </div>
 

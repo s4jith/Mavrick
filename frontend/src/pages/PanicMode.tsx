@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { ApiError, getPlan } from '../api'
-import { saveToHistory } from '../components/HistoryPanel'
+import { ApiError, getPlan, addHistory } from '../api'
 import { MavrickShell } from '../components/pixel/MavrickShell'
 import { RobotMascot } from '../components/pixel/RobotMascot'
 import { LockIcon, PlayIcon, MicIcon, WarningIcon, FireIcon } from '../components/icons/PixelIcons'
@@ -91,8 +90,8 @@ export function PanicMode() {
       setResult(res)
       setStatus('done')
       try { sessionStorage.setItem('mavrick_plan', JSON.stringify(res)) } catch { /* ignore */ }
-      saveToHistory({
-        id: Date.now().toString(36),
+      // Persist to Firestore (best-effort; don't block the UI on it).
+      addHistory({
         text: text.trim(),
         cluster: res.plan.cluster,
         sub_type: res.plan.sub_type,
@@ -101,7 +100,7 @@ export function PanicMode() {
         evaluator_score: res.evaluator_score,
         steps_count: res.plan.steps.length,
         completed_at: new Date().toISOString(),
-      })
+      }).catch(() => { /* offline / not signed in — non-fatal */ })
     } catch (err) {
       const msg = err instanceof ApiError ? err.message : 'Could not reach Mavrick. Is the backend running on :8000?'
       setError(msg)

@@ -14,12 +14,12 @@ from .core.schemas import CoachRequest, CoachResponse, PlanRequest, PlanResponse
 from .gemini.key_manager import NoKeyAvailable
 from .logging_config import get_logger
 from .runtime import key_manager, settings
-from .core.db import init_db
+from .core.firebase_admin import init_firebase
 from .api import auth
 from .api import admin as admin_router
-from .api import google as google_router
-from .api import integrations as integrations_router
 from .api import tts as tts_router
+from .api import profile as profile_router
+from .api import userdata as userdata_router
 from fastapi import Depends
 
 log = get_logger("api")
@@ -34,8 +34,8 @@ async def lifespan(app: FastAPI):
         settings.daily_limit_per_key,
         settings.daily_budget,
     )
-    await init_db()
-    log.info("MongoDB connection initialized")
+    init_firebase()
+    log.info("Firebase Admin ready (auth + Firestore)")
     yield
     log.info("Mavrick shutting down.")
 
@@ -50,10 +50,10 @@ app.add_middleware(
 )
 
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
-app.include_router(google_router.router, prefix="/api/auth/google", tags=["google-oauth"])
 app.include_router(admin_router.router, prefix="/api/admin", tags=["admin"])
-app.include_router(integrations_router.router, prefix="/api/integrations", tags=["integrations"])
 app.include_router(tts_router.router, prefix="/api/tts", tags=["tts"])
+app.include_router(profile_router.router, prefix="/api/profile", tags=["profile"])
+app.include_router(userdata_router.router, prefix="/api", tags=["userdata"])
 
 
 @app.get("/health")

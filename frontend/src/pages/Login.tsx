@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { loginUser, getMe, googleLoginUrl } from '../api'
-import { useAuth } from '../context/AuthContext'
+import { signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth'
+import { auth, googleProvider, firebaseAuthError } from '../firebase'
 import { MavrickShell } from '../components/pixel/MavrickShell'
 import { RobotMascot } from '../components/pixel/RobotMascot'
 import { AuthField } from '../components/pixel/AuthField'
@@ -16,19 +16,29 @@ export function Login() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
-  const { login } = useAuth()
 
   async function submit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
     setLoading(true)
     try {
-      const t = await loginUser({ email, password })
-      const me = await getMe(t.access_token)
-      login(t.access_token, me)
+      await signInWithEmailAndPassword(auth, email.trim(), password)
       navigate('/app')
-    } catch (err: any) {
-      setError(err.message || 'Login failed')
+    } catch (err) {
+      setError(firebaseAuthError(err))
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function googleSignIn() {
+    setError(null)
+    setLoading(true)
+    try {
+      await signInWithPopup(auth, googleProvider)
+      navigate('/app')
+    } catch (err) {
+      setError(firebaseAuthError(err))
     } finally {
       setLoading(false)
     }
@@ -74,7 +84,7 @@ export function Login() {
 
         <div className="mvk-or"><span>OR</span></div>
 
-        <button type="button" className="mvk-social-btn" onClick={() => { window.location.href = googleLoginUrl() }}><BrandMark provider="google" size={20} /> CONTINUE WITH GOOGLE</button>
+        <button type="button" className="mvk-social-btn" onClick={googleSignIn} disabled={loading}><BrandMark provider="google" size={20} /> CONTINUE WITH GOOGLE</button>
         <button type="button" className="mvk-social-btn mvk-social-disabled" disabled title="Coming soon"><BrandMark provider="microsoft" size={20} /> CONTINUE WITH MICROSOFT</button>
 
         <div className="mvk-auth-foot">New here? <Link to="/register" className="mvk-auth-link">Create an account</Link></div>

@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { MavrickShell } from '../components/pixel/MavrickShell'
@@ -6,7 +6,8 @@ import { BrandHeader } from '../components/pixel/BrandHeader'
 import { RobotMascot } from '../components/pixel/RobotMascot'
 import { BrandMark } from '../components/pixel/BrandMark'
 import { useAuth } from '../context/AuthContext'
-import { loadHistory } from '../components/HistoryPanel'
+import { getHistory } from '../api'
+import type { CrisisHistory } from '../types'
 import { UserIcon, MailIcon, PhoneIcon, FireIcon, HourglassIcon, TrophyIcon, CheckIcon, ChartIcon, GearIcon } from '../components/icons/PixelIcons'
 
 function PlayerAvatar({ size = 64 }: { size?: number }) {
@@ -36,7 +37,8 @@ const ACCOUNTS = [
 export function Profile() {
   const { user } = useAuth()
   const navigate = useNavigate()
-  const history = useMemo(() => loadHistory(), [])
+  const [history, setHistory] = useState<CrisisHistory[]>([])
+  useEffect(() => { getHistory().then(setHistory).catch(() => setHistory([])) }, [])
   const crisesSolved = history.length || 42
   const hoursSaved = history.length ? Math.max(1, Math.round(history.length * 3.25)) : 137
   const email = user?.email || 'safrin@example.com'

@@ -1,4 +1,8 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { onIdTokenChanged, signOut } from 'firebase/auth';
+import type { User as FbUser } from 'firebase/auth';
+import { auth } from '../firebase';
+import { syncProfile } from '../api';
 import type { UserResponse } from '../types';
 
 const ADMIN_EMAILS = new Set([
@@ -8,17 +12,25 @@ const ADMIN_EMAILS = new Set([
 interface AuthContextType {
   user: UserResponse | null;
   token: string | null;
-  login: (token: string, user: UserResponse) => void;
+  login: (token: string, user: UserResponse) => void;  // legacy/compat path
   logout: () => void;
   isAuthenticated: boolean;
   isAdmin: boolean;
+  loading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Read persisted session synchronously so the very first render already knows
-// whether the user is authenticated — prevents auth guards from bouncing a
-// logged-in user to /login on a page refresh.
+function mapUser(fb: FbUser): UserResponse {
+  return {
+    id: fb.uid,
+    email: fb.email || '',
+    name: fb.displayName || (fb.email ? fb.email.split('@')[0] : 'Commander'),
+  };
+}
+
+// Optimistic synchronous read of the last session so a page refresh doesn't
+// bounce a logged-in user to /login before Firebase rehydrates.
 function readStored(): { token: string | null; user: UserResponse | null } {
   try {
     const token = localStorage.getItem('mavrick_token');
@@ -34,7 +46,34 @@ function readStored(): { token: string | null; user: UserResponse | null } {
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<UserResponse | null>(() => readStored().user);
   const [token, setToken] = useState<string | null>(() => readStored().token);
+  const [loading, setLoading] = useState(true);
 
+  // Firebase is the source of truth. onIdTokenChanged fires on sign-in,
+  // sign-out AND silent token refresh — so localStorage stays current and
+  // api.ts (which reads mavrick_token) always sends a fresh ID token.
+  useEffect(() => {
+    const unsub = onIdTokenChanged(auth, async (fb) => {
+      if (fb) {
+        const t = await fb.getIdToken();
+        const u = mapUser(fb);
+        setToken(t);
+        setUser(u);
+        localStorage.setItem('mavrick_token', t);
+        localStorage.setItem('mavrick_user', JSON.stringify(u));
+        // Upsert the profile in Firestore (best-effort; token already stored).
+        syncProfile().catch(() => { /* offline / backend down — non-fatal */ });
+      } else {
+        setToken(null);
+        setUser(null);
+        localStorage.removeItem('mavrick_token');
+        localStorage.removeItem('mavrick_user');
+      }
+      setLoading(false);
+    });
+    return unsub;
+  }, []);
+
+  // Legacy compat: lets the custom OAuth callback set a session directly.
   const login = (newToken: string, newUser: UserResponse) => {
     setToken(newToken);
     setUser(newUser);
@@ -43,6 +82,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const logout = () => {
+    signOut(auth).catch(() => { /* ignore */ });
     setToken(null);
     setUser(null);
     localStorage.removeItem('mavrick_token');
@@ -54,8 +94,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   return (
     <AuthContext.Provider value={{
       user, token, login, logout,
-      isAuthenticated: !!token,
+      isAuthenticated: !!user,
       isAdmin,
+      loading,
     }}>
       {children}
     </AuthContext.Provider>

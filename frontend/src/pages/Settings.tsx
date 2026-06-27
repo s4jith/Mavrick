@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useAuth } from '../context/AuthContext'
+import { clearHistory as clearHistoryApi, getReminders, deleteReminder, getSettings, putSettings } from '../api'
 import { MavrickShell } from '../components/pixel/MavrickShell'
 import { BrandHeader } from '../components/pixel/BrandHeader'
 import { GearIcon, UserIcon, ActivityIcon, TrashIcon, ShieldIcon, LogoutIcon } from '../components/icons/PixelIcons'
@@ -28,12 +29,26 @@ export function Settings() {
   const [sound, setSound] = useState(true)
   const [cleared, setCleared] = useState(false)
 
-  function clearHistory() {
-    localStorage.removeItem('mavrick_history')
+  useEffect(() => {
+    getSettings().then(s => {
+      if (typeof s.grid === 'boolean') setGrid(s.grid)
+      if (typeof s.sound === 'boolean') setSound(s.sound)
+    }).catch(() => { /* not signed in / offline */ })
+  }, [])
+
+  function toggleGrid() { const next = !grid; setGrid(next); putSettings({ grid: next, sound }).catch(() => {}) }
+  function toggleSound() { const next = !sound; setSound(next); putSettings({ grid, sound: next }).catch(() => {}) }
+
+  async function clearHistory() {
+    try { await clearHistoryApi() } catch { /* ignore */ }
     setCleared(true); setTimeout(() => setCleared(false), 2200)
   }
-  function clearReminders() {
-    if (confirm('Delete all reminders? This cannot be undone.')) localStorage.removeItem('mavrick_reminders')
+  async function clearReminders() {
+    if (!confirm('Delete all reminders? This cannot be undone.')) return
+    try {
+      const rs = await getReminders()
+      await Promise.all(rs.map(r => deleteReminder(r.id)))
+    } catch { /* ignore */ }
   }
   function doLogout() { logout(); navigate('/login') }
 
@@ -57,24 +72,24 @@ export function Settings() {
         <Section title="PREFERENCES" icon={<ActivityIcon size={13} color="#4361EE" />}>
           <div className="mvk-set-row">
             <div><div className="mvk-set-label">PIXEL GRID</div><div className="mvk-set-hint">Background grid overlay</div></div>
-            <Toggle on={grid} onClick={() => setGrid(g => !g)} />
+            <Toggle on={grid} onClick={toggleGrid} />
           </div>
           <div className="mvk-set-row">
             <div><div className="mvk-set-label">VOICE READ-ALOUD</div><div className="mvk-set-hint">Speak plan steps via TTS</div></div>
-            <Toggle on={sound} onClick={() => setSound(s => !s)} />
+            <Toggle on={sound} onClick={toggleSound} />
           </div>
         </Section>
 
         <Section title="DATA" icon={<TrashIcon size={13} color="#E85D50" />}>
           <div className="mvk-set-row">
-            <div><div className="mvk-set-label">CRISIS HISTORY</div><div className="mvk-set-hint">Stored in your browser</div></div>
+            <div><div className="mvk-set-label">CRISIS HISTORY</div><div className="mvk-set-hint">Synced to your account</div></div>
             <button className="mvk-set-danger" onClick={clearHistory}>{cleared ? 'CLEARED ✓' : 'CLEAR'}</button>
           </div>
           <div className="mvk-set-row">
             <div><div className="mvk-set-label">REMINDERS</div><div className="mvk-set-hint">All saved reminders</div></div>
             <button className="mvk-set-danger" onClick={clearReminders}>CLEAR</button>
           </div>
-          <div className="mvk-set-note">Data lives only in your browser — nothing is uploaded.</div>
+          <div className="mvk-set-note">Your data syncs to your Mavrick account in the cloud.</div>
         </Section>
 
         <Section title="ABOUT" icon={<ShieldIcon size={13} color="#5FD0E6" />}>

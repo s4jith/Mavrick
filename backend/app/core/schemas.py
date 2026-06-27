@@ -67,19 +67,6 @@ class CoachResponse(BaseModel):
     progress_pct: int
 
 
-class UserRegister(BaseModel):
-    email: str
-    password: str
-    name: str
-
-class UserLogin(BaseModel):
-    email: str
-    password: str
-
-class Token(BaseModel):
-    access_token: str
-    token_type: str
-
 class UserResponse(BaseModel):
     id: str
     email: str
