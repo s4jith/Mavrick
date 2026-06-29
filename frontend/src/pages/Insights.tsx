@@ -13,6 +13,37 @@ function mode(arr: string[]): string {
   return Object.entries(f).sort((a, b) => b[1] - a[1])[0]?.[0] ?? ''
 }
 
+function bestProductivityTime(history: CrisisHistory[]): string {
+  if (history.length < 3) return '9 PM – 11 PM'
+  const hourFreq: Record<number, number> = {}
+  history.forEach(h => {
+    const hr = new Date(h.completed_at).getHours()
+    hourFreq[hr] = (hourFreq[hr] ?? 0) + 1
+  })
+  const peakHour = Number(
+    Object.entries(hourFreq).sort((a, b) => b[1] - a[1])[0]?.[0] ?? 21
+  )
+  const end = (peakHour + 2) % 24
+  const fmt = (h: number) => {
+    const period = h < 12 ? 'AM' : 'PM'
+    const h12 = h % 12 === 0 ? 12 : h % 12
+    return `${h12} ${period}`
+  }
+  return `${fmt(peakHour)} – ${fmt(end)}`
+}
+
+const CLUSTER_ADVICE: Record<string, { title: string; desc: string }> = {
+  Academic:  { title: 'START ASSIGNMENTS 48 HOURS EARLIER',      desc: "You'll reduce stress and improve quality of work." },
+  Work:      { title: 'BLOCK DEEP-WORK TIME IN YOUR CALENDAR',   desc: 'Protect 2-hour focus blocks for high-priority work.' },
+  Financial: { title: 'SET UP AUTO-REMINDERS FOR BILLS',         desc: 'Automate recurring payments to eliminate bill crises.' },
+  Health:    { title: 'SCHEDULE HEALTH TASKS LIKE MEETINGS',      desc: 'Treat health appointments as non-negotiable blocks.' },
+  Legal:     { title: 'BUILD A 2-WEEK BUFFER FOR LEGAL TASKS',   desc: 'Legal deadlines are hard — never leave them last-minute.' },
+  Family:    { title: 'PLAN FAMILY COMMITMENTS A WEEK AHEAD',    desc: 'Proactive planning prevents last-minute family stress.' },
+  Digital:   { title: 'BATCH DIGITAL TASKS INTO ONE DAILY BLOCK', desc: 'Handle emails, messages, and tech issues in one slot.' },
+  Social:    { title: 'SCHEDULE SOCIAL COMMITMENTS IN ADVANCE',  desc: 'Blocking time reduces guilt and last-minute panic.' },
+  General:   { title: 'BUILD A DAILY REVIEW HABIT',              desc: 'Five minutes each morning prevents most crises.' },
+}
+
 export function Insights() {
   const [history, setHistory] = useState<CrisisHistory[]>([])
   useEffect(() => { getHistory().then(setHistory).catch(() => setHistory([])) }, [])
@@ -21,7 +52,10 @@ export function Insights() {
   const crisesSolved = total || 42
   const completion = total ? Math.round(history.reduce((a, h) => a + h.evaluator_score, 0) / total) : 84
   const hoursSaved = total ? Math.max(1, Math.round(total * 3.25)) : 137
-  const common = total ? mode(history.map(h => h.cluster)).toUpperCase() : 'ASSIGNMENTS'
+  const topCluster = total ? mode(history.map(h => h.cluster)) : 'Academic'
+  const common = topCluster.toUpperCase()
+  const bestTime = bestProductivityTime(history)
+  const advice = CLUSTER_ADVICE[topCluster] ?? CLUSTER_ADVICE['General']
 
   return (
     <MavrickShell active="profile">
@@ -82,9 +116,11 @@ export function Insights() {
         <div className="mvk-card mvk-card-pad mvk-best-time">
           <AlarmIcon size={24} color="#E85D50" />
           <div>
-            <div className="mvk-best-time-val">9 PM - 11 PM</div>
+            <div className="mvk-best-time-val">{bestTime}</div>
             <div className="mvk-best-time-sub">BEST PRODUCTIVITY TIME</div>
-            <div className="mvk-best-time-hint">You're most productive during this time.</div>
+            <div className="mvk-best-time-hint">
+              {total >= 3 ? 'Based on when you complete your crises.' : 'You\'re most productive during this time.'}
+            </div>
           </div>
         </div>
 
@@ -93,8 +129,8 @@ export function Insights() {
         <div className="mvk-airec">
           <RobotMascot size={42} mood="coach" />
           <div className="mvk-airec-body">
-            <div className="mvk-airec-title">START ASSIGNMENTS 48 HOURS EARLIER</div>
-            <div className="mvk-airec-desc">You'll reduce stress and improve the quality of your work.</div>
+            <div className="mvk-airec-title">{advice.title}</div>
+            <div className="mvk-airec-desc">{advice.desc}</div>
           </div>
         </div>
       </motion.div>

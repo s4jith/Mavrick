@@ -1,7 +1,11 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth'
+import {
+  signInWithEmailAndPassword, signInWithPopup,
+  sendPasswordResetEmail, setPersistence,
+  browserLocalPersistence, browserSessionPersistence,
+} from 'firebase/auth'
 import { auth, googleProvider, firebaseAuthError } from '../firebase'
 import { MavrickShell } from '../components/pixel/MavrickShell'
 import { RobotMascot } from '../components/pixel/RobotMascot'
@@ -15,6 +19,8 @@ export function Login() {
   const [remember, setRemember] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [resetSent, setResetSent] = useState(false)
+  const [resetLoading, setResetLoading] = useState(false)
   const navigate = useNavigate()
 
   async function submit(e: React.FormEvent) {
@@ -22,6 +28,7 @@ export function Login() {
     setError(null)
     setLoading(true)
     try {
+      await setPersistence(auth, remember ? browserLocalPersistence : browserSessionPersistence)
       await signInWithEmailAndPassword(auth, email.trim(), password)
       navigate('/app')
     } catch (err) {
@@ -35,12 +42,28 @@ export function Login() {
     setError(null)
     setLoading(true)
     try {
+      await setPersistence(auth, remember ? browserLocalPersistence : browserSessionPersistence)
       await signInWithPopup(auth, googleProvider)
       navigate('/app')
     } catch (err) {
       setError(firebaseAuthError(err))
     } finally {
       setLoading(false)
+    }
+  }
+
+  async function forgotPassword() {
+    const addr = email.trim()
+    if (!addr) { setError('Enter your email address first, then tap Forgot password.'); return }
+    setError(null)
+    setResetLoading(true)
+    try {
+      await sendPasswordResetEmail(auth, addr)
+      setResetSent(true)
+    } catch (err) {
+      setError(firebaseAuthError(err))
+    } finally {
+      setResetLoading(false)
     }
   }
 
@@ -73,10 +96,23 @@ export function Login() {
             <span className={`mvk-checkbox ${remember ? 'on' : ''}`}>{remember && <CheckIcon size={10} color="#FFF6E6" />}</span>
             Remember me
           </button>
-          <span className="mvk-auth-link">Forgot password?</span>
+          <button
+            type="button"
+            className="mvk-auth-link"
+            onClick={forgotPassword}
+            disabled={resetLoading}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+          >
+            {resetLoading ? 'Sending…' : 'Forgot password?'}
+          </button>
         </div>
 
         {error && <div className="mvk-error">{error}</div>}
+        {resetSent && (
+          <div className="mvk-reassure" style={{ marginTop: 0 }}>
+            ✓ Reset link sent to <strong>{email.trim()}</strong>. Check your inbox.
+          </div>
+        )}
 
         <button type="submit" className="mvk-save-btn" disabled={loading}>
           <PlayIcon size={16} color="#FFF6E6" /> {loading ? 'LOGGING IN…' : 'LOGIN'}

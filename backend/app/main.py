@@ -78,7 +78,7 @@ def plan(req: PlanRequest, current_user: dict = Depends(auth.get_current_user)) 
 
 
 @app.post("/api/coach", response_model=CoachResponse)
-def coach(req: CoachRequest) -> CoachResponse:
+def coach(req: CoachRequest, current_user: dict = Depends(auth.get_current_user)) -> CoachResponse:
     log.info(
         "Coach check-in: step %d, %d/%d completed, %d min elapsed",
         req.current_step_index,

@@ -54,12 +54,35 @@ const DEMO_DEADLINES = [
   { title: 'INTERVIEW',        sub: 'Tomorrow',     Icon: BriefcaseIcon, color: '#4890E8' },
 ]
 
-const TIMELINE = [
+const DEMO_TIMELINE = [
   { time: '09:00', title: 'Start Assignment',    desc: 'Deep-focus block, no distractions', Icon: BookIcon,      color: '#E85D50' },
   { time: '11:00', title: 'Team Meeting',        desc: 'Standup and project sync',           Icon: BriefcaseIcon, color: '#4890E8' },
   { time: '14:00', title: 'Pay Electricity Bill',desc: 'Due today, takes 2 minutes',         Icon: ZapIcon,       color: '#E8901A' },
   { time: '17:00', title: 'Interview Prep',      desc: 'Review questions and portfolio',     Icon: BriefcaseIcon, color: '#2A8090' },
 ]
+
+function toTimeline(reminders: Reminder[]) {
+  const now = new Date()
+  const todayStr = now.toDateString()
+  return reminders
+    .filter(r => !r.completed && r.due_date && new Date(r.due_date).toDateString() === todayStr)
+    .sort((a, b) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime())
+    .map(r => {
+      const d = new Date(r.due_date)
+      const t = r.title.toLowerCase()
+      const Icon = /bill|pay|rent|electric|invoice|tax/.test(t) ? ZapIcon
+        : /meeting|interview|call|presentation|client/.test(t) ? BriefcaseIcon
+        : BookIcon
+      const color = r.priority === 'high' ? '#E85D50' : r.priority === 'medium' ? '#4890E8' : '#2A8090'
+      return {
+        time: d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }),
+        title: r.title.toUpperCase(),
+        desc: r.description || `Due ${d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`,
+        Icon,
+        color,
+      }
+    })
+}
 
 /* ── Screen ─────────────────────────────────────────────────── */
 
@@ -86,6 +109,17 @@ export function HomeDashboard() {
   const deadlines = realDeadlines.length ? realDeadlines : DEMO_DEADLINES
 
   const recTitle = `START ${deadlines[0].title} NOW`
+  const timeline = toTimeline(reminders)
+  const TIMELINE = timeline.length ? timeline : DEMO_TIMELINE
+  const totalEstMin = active.reduce((s, r) => {
+    // rough estimate: high=90min, medium=45min, low=20min
+    return s + (r.priority === 'high' ? 90 : r.priority === 'medium' ? 45 : 20)
+  }, 0)
+  const estLabel = totalEstMin
+    ? totalEstMin >= 60
+      ? `${Math.floor(totalEstMin / 60)}H ${totalEstMin % 60 > 0 ? `${totalEstMin % 60}M` : ''}`.trim()
+      : `${totalEstMin}M`
+    : '1H 45M'
 
   return (
     <MavrickShell active="home">
@@ -149,7 +183,7 @@ export function HomeDashboard() {
           <div className="mvk-airec-body">
             <div className="mvk-airec-title">{recTitle}</div>
             <div className="mvk-airec-desc">Focus now and finish ahead. I'll guide every step.</div>
-            <div className="mvk-airec-eta">ESTIMATED TIME: <strong>1H 45M</strong></div>
+            <div className="mvk-airec-eta">ESTIMATED TIME: <strong>{estLabel}</strong></div>
           </div>
         </div>
 
