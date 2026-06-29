@@ -10,6 +10,7 @@
 import type { ReactNode } from 'react'
 import { PixelScene } from './PixelScene'
 import { BottomNav } from './BottomNav'
+import { RobotMascot } from './RobotMascot'
 import type { NavTab } from './BottomNav'
 import '../../styles/mavrick.css'
 
@@ -27,6 +28,31 @@ export function MavrickShell({ active, children, night = false }: Props) {
       <PixelScene />
 
       <div className="mvk-frame">
+        {/* Desktop-only left panel — hidden on mobile via CSS */}
+        <aside className="mvk-desktop-panel" aria-hidden="true">
+          <RobotMascot size={96} mood="wave" />
+          <div className="mvk-desktop-logo">MAVRICK</div>
+          <div className="mvk-badge">AI CRISIS COMMANDER</div>
+          <div className="mvk-desktop-tagline">
+            Turn <span className="mvk-coral">Panic</span> into a{' '}
+            <span className="mvk-coral">Plan</span>. Instantly.
+          </div>
+          <div className="mvk-desktop-features">
+            <div className="mvk-desktop-feat"><span className="mvk-coral">✦</span> One AI call, full time-blocked plan</div>
+            <div className="mvk-desktop-feat"><span className="mvk-coral">✦</span> First step always doable right now</div>
+            <div className="mvk-desktop-feat"><span className="mvk-coral">✦</span> AI coach guides every step</div>
+            <div className="mvk-desktop-feat"><span className="mvk-coral">✦</span> Crisis history & smart insights</div>
+          </div>
+          <div className="mvk-desktop-clusters">
+            {['FINANCIAL','ACADEMIC','HEALTH','WORK','LEGAL','FAMILY'].map(c => (
+              <span key={c} className="mvk-desktop-cluster">{c}</span>
+            ))}
+          </div>
+          <div className="mvk-desktop-quote">
+            "I needed a plan. Mavrick gave me one in 4 seconds."
+          </div>
+        </aside>
+
         <div className="mvk-scroll">{children}</div>
 
         <div className="mvk-footer">

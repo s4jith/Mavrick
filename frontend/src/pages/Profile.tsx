@@ -31,7 +31,6 @@ function PlayerAvatar({ size = 64 }: { size?: number }) {
 const ACCOUNTS = [
   { provider: 'gmail' as const,  name: 'GMAIL' },
   { provider: 'google' as const, name: 'GOOGLE CALENDAR' },
-  { provider: 'microsoft' as const, name: 'MICROSOFT' },
 ]
 
 export function Profile() {
@@ -39,10 +38,10 @@ export function Profile() {
   const navigate = useNavigate()
   const [history, setHistory] = useState<CrisisHistory[]>([])
   useEffect(() => { getHistory().then(setHistory).catch(() => setHistory([])) }, [])
-  const crisesSolved = history.length || 42
-  const hoursSaved = history.length ? Math.max(1, Math.round(history.length * 3.25)) : 137
-  const email = user?.email || 'safrin@example.com'
-  const name = user?.name || 'Safrin Ahmed'
+  const crisesSolved = history.length
+  const hoursSaved = history.length ? Math.max(1, Math.round(history.length * 3.25)) : 0
+  const email = user?.email || '—'
+  const name = user?.name || '—'
 
   return (
     <MavrickShell active="profile">
@@ -61,7 +60,7 @@ export function Profile() {
             <div className="mvk-prof-info">
               <div className="mvk-prof-row"><span className="mvk-prof-ico"><UserIcon size={13} color="#E85D50" /></span><div><div className="mvk-prof-label">NAME</div><div className="mvk-prof-val">{name}</div></div></div>
               <div className="mvk-prof-row"><span className="mvk-prof-ico"><MailIcon size={13} color="#E85D50" /></span><div><div className="mvk-prof-label">EMAIL</div><div className="mvk-prof-val">{email}</div></div></div>
-              <div className="mvk-prof-row"><span className="mvk-prof-ico"><PhoneIcon size={13} color="#E85D50" /></span><div><div className="mvk-prof-label">PHONE</div><div className="mvk-prof-val">+1 234 567 890</div></div></div>
+              <div className="mvk-prof-row"><span className="mvk-prof-ico"><PhoneIcon size={13} color="#E85D50" /></span><div><div className="mvk-prof-label">PHONE</div><div className="mvk-prof-val">—</div></div></div>
             </div>
           </div>
         </div>

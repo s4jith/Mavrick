@@ -1,41 +1,14 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { MavrickShell } from '../components/pixel/MavrickShell'
 import { RobotMascot } from '../components/pixel/RobotMascot'
 import {
   SirenIcon, TimerIcon, BookIcon, HourglassIcon,
-  SearchIcon, ImageIcon, MicIcon, CalendarIcon, RocketIcon,
+  SearchIcon, ImageIcon, MicIcon, CalendarIcon, RocketIcon, CheckIcon,
 } from '../components/icons/PixelIcons'
 import type { PlanResponse } from '../types'
 
-/* ── Fallback demo plan (matches the reference screen) ── */
-const DEMO: PlanResponse = {
-  plan: {
-    cluster: 'Work',
-    sub_type: 'Presentation',
-    severity: 'critical',
-    summary: 'Build and rehearse a client presentation in the time you have left.',
-    first_action: 'Open your slide deck and write the title slide right now.',
-    steps: [
-      { order: 1, title: 'RESEARCH', detail: 'Gather info and key points',     minutes: 20, is_right_now: true },
-      { order: 2, title: 'SLIDES',   detail: 'Create and organize content',    minutes: 40, is_right_now: false },
-      { order: 3, title: 'VISUALS',  detail: 'Add visuals and examples',       minutes: 30, is_right_now: false },
-      { order: 4, title: 'PRACTICE', detail: 'Rehearse and improve flow',      minutes: 30, is_right_now: false },
-    ],
-    warnings: [],
-  },
-  urgency_score: 92,
-  urgency_colour: 'red',
-  total_planned_minutes: 135,
-  minutes_left: 180,
-  fits: true,
-  cached: false,
-  key_index: null,
-  latency_ms: 0,
-  evaluator_score: 90,
-  evaluator_notes: [],
-}
 
 const STEP_COLORS = ['#E85D50', '#2A8090', '#B5179E', '#4361EE']
 
@@ -66,13 +39,19 @@ export function AIRescuePlan() {
   const navigate = useNavigate()
   const [calAdded, setCalAdded] = useState(false)
 
-  const plan = useMemo<PlanResponse>(() => {
+  const plan = useMemo<PlanResponse | null>(() => {
     try {
       const raw = sessionStorage.getItem('mavrick_plan')
       if (raw) return JSON.parse(raw) as PlanResponse
     } catch { /* ignore */ }
-    return DEMO
+    return null
   }, [])
+
+  useEffect(() => {
+    if (!plan) navigate('/app/plan', { replace: true })
+  }, [plan, navigate])
+
+  if (!plan) return null
 
   const steps = useMemo(() => {
     let t = 0
@@ -170,6 +149,14 @@ export function AIRescuePlan() {
             <RocketIcon size={15} color="#FFF6E6" /> START MISSION
           </button>
         </div>
+
+        <button
+          className="mvk-btn mvk-btn-outline"
+          style={{ marginTop: 10, color: '#28B068', borderColor: '#28B068' }}
+          onClick={() => { sessionStorage.removeItem('mavrick_plan'); navigate('/app') }}
+        >
+          <CheckIcon size={14} color="#28B068" /> SOLVED IT MYSELF
+        </button>
 
         <div className="mvk-crush">
           <span className="mvk-coral">✦</span> I've got your back. Let's crush this! <span className="mvk-coral">✦</span>

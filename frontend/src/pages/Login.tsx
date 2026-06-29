@@ -121,7 +121,6 @@ export function Login() {
         <div className="mvk-or"><span>OR</span></div>
 
         <button type="button" className="mvk-social-btn" onClick={googleSignIn} disabled={loading}><BrandMark provider="google" size={20} /> CONTINUE WITH GOOGLE</button>
-        <button type="button" className="mvk-social-btn mvk-social-disabled" disabled title="Coming soon"><BrandMark provider="microsoft" size={20} /> CONTINUE WITH MICROSOFT</button>
 
         <div className="mvk-auth-foot">New here? <Link to="/register" className="mvk-auth-link">Create an account</Link></div>
       </motion.form>

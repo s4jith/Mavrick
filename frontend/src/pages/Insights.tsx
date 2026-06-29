@@ -49,11 +49,11 @@ export function Insights() {
   useEffect(() => { getHistory().then(setHistory).catch(() => setHistory([])) }, [])
   const total = history.length
 
-  const crisesSolved = total || 42
-  const completion = total ? Math.round(history.reduce((a, h) => a + h.evaluator_score, 0) / total) : 84
-  const hoursSaved = total ? Math.max(1, Math.round(total * 3.25)) : 137
-  const topCluster = total ? mode(history.map(h => h.cluster)) : 'Academic'
-  const common = topCluster.toUpperCase()
+  const crisesSolved = total
+  const completion = total ? Math.round(history.reduce((a, h) => a + h.evaluator_score, 0) / total) : 0
+  const hoursSaved = total ? Math.max(1, Math.round(total * 3.25)) : 0
+  const topCluster = total ? mode(history.map(h => h.cluster)) : ''
+  const common = topCluster ? topCluster.toUpperCase() : '—'
   const bestTime = bestProductivityTime(history)
   const advice = CLUSTER_ADVICE[topCluster] ?? CLUSTER_ADVICE['General']
 

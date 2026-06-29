@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { MavrickShell } from '../components/pixel/MavrickShell'
@@ -33,33 +33,6 @@ function SpeakerIcon({ on, size = 14 }: { on: boolean; size?: number }) {
   )
 }
 
-/* ── Fallback demo plan (matches the rescue-plan demo) ── */
-const DEMO: PlanResponse = {
-  plan: {
-    cluster: 'Work',
-    sub_type: 'Presentation',
-    severity: 'critical',
-    summary: 'Build and rehearse a client presentation in the time you have left.',
-    first_action: 'Open your slide deck and write the title slide right now.',
-    steps: [
-      { order: 1, title: 'RESEARCH', detail: 'Gather info and key overview points.',     minutes: 20, is_right_now: true },
-      { order: 2, title: 'SLIDES',   detail: 'Create and organize the content.',          minutes: 40, is_right_now: false },
-      { order: 3, title: 'VISUALS',  detail: 'Add details, examples and supporting points.', minutes: 30, is_right_now: false },
-      { order: 4, title: 'PRACTICE', detail: 'Rehearse and improve the flow.',            minutes: 30, is_right_now: false },
-    ],
-    warnings: [],
-  },
-  urgency_score: 92,
-  urgency_colour: 'red',
-  total_planned_minutes: 135,
-  minutes_left: 180,
-  fits: true,
-  cached: false,
-  key_index: null,
-  latency_ms: 0,
-  evaluator_score: 90,
-  evaluator_notes: [],
-}
 
 function fmtClock(sec: number): string {
   const m = Math.floor(sec / 60), s = sec % 60
@@ -69,22 +42,31 @@ function fmtClock(sec: number): string {
 export function ExecutionMode() {
   const navigate = useNavigate()
 
-  const plan = useMemo<PlanResponse>(() => {
+  const plan = useMemo<PlanResponse | null>(() => {
     try {
       const raw = sessionStorage.getItem('mavrick_plan')
       if (raw) return JSON.parse(raw) as PlanResponse
     } catch { /* ignore */ }
-    return DEMO
+    return null
   }, [])
 
-  const steps = plan.plan.steps
+  // All state/refs hoisted above the null guard (React rules of hooks)
   const [idx, setIdx] = useState(0)
   const [complete, setComplete] = useState(false)
+  const [secondsLeft, setSecondsLeft] = useState(0)
+  const [voiceOn, setVoiceOn] = useState(true)
+  const voiceOnRef = useRef(true)
+  const audioRef = useRef<HTMLAudioElement | null>(null)
+  const ttsBackend = useRef<boolean | null>(null)
 
+  const steps = plan?.plan.steps ?? []
   const current = steps[idx]
   const next = steps[idx + 1]
   const stepTotal = (current?.minutes ?? 1) * 60
-  const [secondsLeft, setSecondsLeft] = useState(stepTotal)
+
+  useLayoutEffect(() => {
+    if (!plan) navigate('/app/plan', { replace: true })
+  }, [plan, navigate])
 
   // Reset the clock whenever the active step changes
   useEffect(() => { setSecondsLeft((steps[idx]?.minutes ?? 1) * 60) }, [idx, steps])
@@ -108,12 +90,6 @@ export function ExecutionMode() {
     : behind
       ? "You're falling behind. Focus on content first."
       : 'Great pace. Head down and finish this block.'
-
-  /* ── AI coach voice (Google TTS → browser speechSynthesis fallback) ── */
-  const [voiceOn, setVoiceOn] = useState(true)
-  const voiceOnRef = useRef(true)
-  const audioRef = useRef<HTMLAudioElement | null>(null)
-  const ttsBackend = useRef<boolean | null>(null)
 
   useEffect(() => { ttsAvailable().then(v => { ttsBackend.current = v }) }, [])
 
@@ -141,6 +117,7 @@ export function ExecutionMode() {
         el.play().catch(() => browserSpeak(text))
         return
       }
+      ttsBackend.current = false // backend TTS unavailable — use browser speech from now on
     }
     browserSpeak(text)
   }
@@ -160,6 +137,9 @@ export function ExecutionMode() {
     else if (behind) speak("You're falling behind. Focus on content first.")
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [overdue, behind])
+
+  // Guard after all hooks — redirecting if no plan was found
+  if (!plan) return null
 
   function completeTask() {
     if (idx + 1 >= steps.length) { stopVoice(); setComplete(true); return }

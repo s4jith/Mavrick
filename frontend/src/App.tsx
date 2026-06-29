@@ -15,7 +15,7 @@ import { ConnectDigitalLife } from './pages/ConnectDigitalLife'
 import { Insights } from './pages/Insights'
 import { Calendar } from './pages/Calendar'
 import { Profile } from './pages/Profile'
-import { Reminders } from './pages/Reminders'
+// Reminders merged into Calendar page — route redirects to /app/calendar
 import { Settings } from './pages/Settings'
 import { Admin } from './pages/Admin'
 import './App.css'
@@ -58,7 +58,7 @@ function App() {
             <Route path="/app/calendar" element={<RequireAuth><Calendar /></RequireAuth>} />
             <Route path="/app/profile" element={<RequireAuth><Profile /></RequireAuth>} />
             <Route path="/app/insights" element={<RequireAuth><Insights /></RequireAuth>} />
-            <Route path="/app/reminders" element={<RequireAuth><Reminders /></RequireAuth>} />
+            <Route path="/app/reminders" element={<Navigate to="/app/calendar" replace />} />
             <Route path="/app/settings" element={<RequireAuth><Settings /></RequireAuth>} />
 
             {/* Admin — own layout */}

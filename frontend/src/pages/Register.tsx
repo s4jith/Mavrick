@@ -96,7 +96,6 @@ export function Register() {
         <div className="mvk-or"><span>OR</span></div>
 
         <button type="button" className="mvk-social-btn" onClick={googleSignUp} disabled={loading}><BrandMark provider="google" size={20} /> SIGN UP WITH GOOGLE</button>
-        <button type="button" className="mvk-social-btn mvk-social-disabled" disabled title="Coming soon"><BrandMark provider="microsoft" size={20} /> SIGN UP WITH MICROSOFT</button>
 
         <div className="mvk-auth-foot">Already have an account? <Link to="/login" className="mvk-auth-link">Login</Link></div>
       </motion.form>

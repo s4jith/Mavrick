@@ -37,7 +37,7 @@ function dueLabel(due: string): string {
 }
 
 function crisisScore(active: Reminder[]): number {
-  if (active.length === 0) return 78 // demo baseline (matches reference)
+  if (active.length === 0) return 0
   let s = 46
   for (const r of active) {
     s += r.priority === 'high' ? 12 : r.priority === 'medium' ? 7 : 4
@@ -46,20 +46,6 @@ function crisisScore(active: Reminder[]): number {
   return Math.min(99, s)
 }
 
-/* ── Fallback demo content (used before the user has any reminders) ── */
-
-const DEMO_DEADLINES = [
-  { title: 'ASSIGNMENT',       sub: '2 Hours Left', Icon: BookIcon,      color: '#E85D50' },
-  { title: 'ELECTRICITY BILL', sub: 'Today',        Icon: ZapIcon,       color: '#E8901A' },
-  { title: 'INTERVIEW',        sub: 'Tomorrow',     Icon: BriefcaseIcon, color: '#4890E8' },
-]
-
-const DEMO_TIMELINE = [
-  { time: '09:00', title: 'Start Assignment',    desc: 'Deep-focus block, no distractions', Icon: BookIcon,      color: '#E85D50' },
-  { time: '11:00', title: 'Team Meeting',        desc: 'Standup and project sync',           Icon: BriefcaseIcon, color: '#4890E8' },
-  { time: '14:00', title: 'Pay Electricity Bill',desc: 'Due today, takes 2 minutes',         Icon: ZapIcon,       color: '#E8901A' },
-  { time: '17:00', title: 'Interview Prep',      desc: 'Review questions and portfolio',     Icon: BriefcaseIcon, color: '#2A8090' },
-]
 
 function toTimeline(reminders: Reminder[]) {
   const now = new Date()
@@ -97,8 +83,7 @@ export function HomeDashboard() {
   const score = crisisScore(active)
   const firstName = (user?.name?.trim().split(/\s+/)[0] || 'Commander').toUpperCase()
 
-  // Deadlines: real reminders (soonest 3) or demo fallback
-  const realDeadlines = [...active]
+  const deadlines = [...active]
     .filter(r => r.due_date)
     .sort((a, b) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime())
     .slice(0, 3)
@@ -106,11 +91,9 @@ export function HomeDashboard() {
       const { Icon, color } = pickDeco(r.title)
       return { title: r.title.toUpperCase(), sub: dueLabel(r.due_date), Icon, color }
     })
-  const deadlines = realDeadlines.length ? realDeadlines : DEMO_DEADLINES
 
-  const recTitle = `START ${deadlines[0].title} NOW`
-  const timeline = toTimeline(reminders)
-  const TIMELINE = timeline.length ? timeline : DEMO_TIMELINE
+  const recTitle = deadlines.length ? `START ${deadlines[0].title} NOW` : 'ADD YOUR FIRST TASK'
+  const TIMELINE = toTimeline(reminders)
   const totalEstMin = active.reduce((s, r) => {
     // rough estimate: high=90min, medium=45min, low=20min
     return s + (r.priority === 'high' ? 90 : r.priority === 'medium' ? 45 : 20)
@@ -119,7 +102,7 @@ export function HomeDashboard() {
     ? totalEstMin >= 60
       ? `${Math.floor(totalEstMin / 60)}H ${totalEstMin % 60 > 0 ? `${totalEstMin % 60}M` : ''}`.trim()
       : `${totalEstMin}M`
-    : '1H 45M'
+    : '—'
 
   return (
     <MavrickShell active="home">
@@ -161,7 +144,11 @@ export function HomeDashboard() {
           <WarningIcon size={14} color="#E8901A" />
         </div>
         <div className="mvk-list">
-          {deadlines.map((d, i) => (
+          {deadlines.length === 0 ? (
+            <div style={{ fontSize: 8, color: 'var(--mvk-label)', lineHeight: 1.8, padding: '6px 0' }}>
+              No upcoming deadlines.<br />Add reminders to track them here.
+            </div>
+          ) : deadlines.map((d, i) => (
             <div className="mvk-list-item" key={i}>
               <span className="mvk-li-icon"><d.Icon size={18} color={d.color} /></span>
               <div className="mvk-li-body">
@@ -193,7 +180,11 @@ export function HomeDashboard() {
           <span className="mvk-sec-title">TODAY'S TIMELINE</span>
         </div>
         <div className="mvk-timeline">
-          {TIMELINE.map((t, i) => (
+          {TIMELINE.length === 0 ? (
+            <div style={{ fontSize: 8, color: 'var(--mvk-label)', lineHeight: 1.8, padding: '6px 0' }}>
+              Nothing scheduled for today.<br />Set due dates on reminders to see them here.
+            </div>
+          ) : TIMELINE.map((t, i) => (
             <div className="mvk-tl-row" key={i}>
               <div className="mvk-tl-time">{t.time}</div>
               <div className="mvk-tl-rail">
@@ -226,7 +217,7 @@ export function HomeDashboard() {
             <span className="mvk-qa-label">VOICE INPUT</span>
             <span className="mvk-qa-sub">Speak your crisis</span>
           </button>
-          <button className="mvk-qa-btn" onClick={() => navigate('/app/reminders')}>
+          <button className="mvk-qa-btn" onClick={() => navigate('/app/calendar')}>
             <PlusIcon size={22} color="#2A8090" />
             <span className="mvk-qa-label">ADD TASK</span>
             <span className="mvk-qa-sub">New task</span>
