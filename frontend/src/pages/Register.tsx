@@ -4,7 +4,6 @@ import { motion } from 'framer-motion'
 import { createUserWithEmailAndPassword, updateProfile, signInWithPopup } from 'firebase/auth'
 import { auth, googleProvider, firebaseAuthError } from '../firebase'
 import { MavrickShell } from '../components/pixel/MavrickShell'
-import { RobotMascot } from '../components/pixel/RobotMascot'
 import { AuthField } from '../components/pixel/AuthField'
 import { BrandMark } from '../components/pixel/BrandMark'
 import { UserIcon, CalendarIcon, MailIcon, PhoneIcon, LockIcon, CheckIcon, PlayIcon } from '../components/icons/PixelIcons'
@@ -57,10 +56,8 @@ export function Register() {
   return (
     <MavrickShell>
       <div className="mvk-hero">
-        <RobotMascot size={54} />
-        <div className="mvk-hero-word">MAVRICK</div>
-        <div className="mvk-badge">AI CRISIS COMMANDER</div>
-        <div className="mvk-hero-sub">Turn <span className="mvk-coral">Panic</span> into a <span className="mvk-coral">Plan</span>. Instantly.</div>
+        <div className="mvk-brand-space" aria-hidden="true" />
+        <div className="mvk-hero-sub">Turn <span className="mvk-coral">panic</span> into a <span style={{ color: 'var(--mvk-teal)' }}>plan</span>. Instantly.</div>
       </div>
 
       <motion.form

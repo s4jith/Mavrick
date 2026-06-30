@@ -9,6 +9,7 @@ import {
   HourglassIcon, RocketIcon, MicIcon, PlusIcon, CalendarIcon,
 } from '../components/icons/PixelIcons'
 import { getReminders } from '../api'
+import { PlayerAvatar, useAvatar } from '../components/pixel/Avatars'
 import type { Reminder } from '../types'
 
 /* ── Data helpers ───────────────────────────────────────────── */
@@ -75,6 +76,7 @@ function toTimeline(reminders: Reminder[]) {
 export function HomeDashboard() {
   const { user } = useAuth()
   const navigate = useNavigate()
+  const { avatar } = useAvatar()
   const [reminders, setReminders] = useState<Reminder[]>([])
 
   useEffect(() => { getReminders().then(setReminders).catch(() => setReminders([])) }, [])
@@ -106,17 +108,6 @@ export function HomeDashboard() {
 
   return (
     <MavrickShell active="home">
-      {/* ── Compact brand header ── */}
-      <header className="mvk-header">
-        <div className="mvk-logo">
-          <RobotMascot size={28} />
-          <div>
-            <div className="mvk-wordmark">MAVRICK</div>
-            <div className="mvk-badge">AI CRISIS COMMANDER</div>
-          </div>
-        </div>
-      </header>
-
       <motion.section
         className="mvk-card"
         initial={{ opacity: 0, y: 18 }}
@@ -125,7 +116,7 @@ export function HomeDashboard() {
       >
         {/* ── Greeting + Crisis Score ── */}
         <div className="mvk-greet">
-          <RobotMascot size={66} mood="wave" />
+          <PlayerAvatar id={avatar} size={66} framed />
           <div className="mvk-greet-text">
             <div className="mvk-greet-hello">WELCOME BACK,</div>
             <div className="mvk-greet-name">{firstName} <span className="mvk-inline-heart">♥</span></div>

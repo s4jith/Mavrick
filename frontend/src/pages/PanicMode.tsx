@@ -13,12 +13,18 @@ const EXAMPLES = [
   'Rent due tomorrow',
 ]
 
-const TIME_OPTIONS = [
-  { label: '30 MINS',  minutes: 30 },
-  { label: '1 HOUR',   minutes: 60 },
-  { label: '3 HOURS',  minutes: 180 },
-  { label: 'TOMORROW', minutes: 1440 },
+const QUICK_OPTIONS = [
+  { label: '30 MINS', minutes: 30 },
+  { label: '1 HOUR',  minutes: 60 },
+  { label: '3 HOURS', minutes: 180 },
 ]
+
+function formatTimeLeft(min: number): string {
+  if (min < 60) return `${min} min`
+  if (min < 1440) { const h = Math.floor(min / 60); const m = min % 60; return m ? `${h}h ${m}m` : `${h}h` }
+  const d = Math.floor(min / 1440); const h = Math.floor((min % 1440) / 60)
+  return h ? `${d}d ${h}h from now` : `${d} day${d !== 1 ? 's' : ''} from now`
+}
 
 const LOADING_LINES = [
   'Reading your crisis...',
@@ -65,6 +71,8 @@ export function PanicMode() {
   const navigate = useNavigate()
   const [text, setText] = useState('')
   const [minutes, setMinutes] = useState<number | null>(null)
+  const [customDate, setCustomDate] = useState('')
+  const [showDatePicker, setShowDatePicker] = useState(false)
   const [status, setStatus] = useState<Status>('input')
   const [error, setError] = useState<string | null>(null)
   const [line, setLine] = useState(LOADING_LINES[0])
@@ -109,23 +117,26 @@ export function PanicMode() {
   }
 
   function reset() {
-    setText(''); setMinutes(null); setResult(null); setError(null); setStatus('input')
+    setText(''); setMinutes(null); setCustomDate(''); setShowDatePicker(false)
+    setResult(null); setError(null); setStatus('input')
+  }
+
+  function pickQuick(min: number) { setMinutes(min); setCustomDate(''); setShowDatePicker(false) }
+  function handleCustomDate(val: string) {
+    setCustomDate(val)
+    if (!val) return
+    const diff = Math.round((new Date(val).getTime() - Date.now()) / 60000)
+    if (diff > 0) setMinutes(diff)
   }
 
   return (
     <MavrickShell active="panic">
       {/* ── Hero ── */}
       <div className="mvk-hero">
-        <div className="mvk-hero-robot">
-          <span className="mvk-burst" />
-          <RobotMascot size={62} mood="panic" />
-          <span className="mvk-bang">!</span>
-        </div>
         <div className="mvk-screen-title-row">
           <LockIcon size={20} color="#E85D50" />
           <span className="mvk-screen-title">PANIC MODE</span>
         </div>
-        <div className="mvk-badge">AI CRISIS COMMANDER</div>
         <div className="mvk-hero-sub">Tell me what's <span className="mvk-coral">wrong</span>.</div>
       </div>
 
@@ -192,16 +203,46 @@ export function PanicMode() {
           {/* Time remaining */}
           <div className="mvk-mini-label">TIME REMAINING</div>
           <div className="mvk-pills">
-            {TIME_OPTIONS.map(t => (
+            {QUICK_OPTIONS.map(t => (
               <button
                 key={t.label}
-                className={`mvk-pill ${minutes === t.minutes ? 'active' : ''}`}
-                onClick={() => setMinutes(t.minutes)}
+                className={`mvk-pill ${!customDate && minutes === t.minutes ? 'active' : ''}`}
+                onClick={() => pickQuick(t.minutes)}
               >
                 {t.label}
               </button>
             ))}
           </div>
+          <div className="mvk-pills-ext">
+            {([{ label: 'TOMORROW', minutes: 1440 }, { label: 'NEXT WEEK', minutes: 10080 }, { label: 'NEXT MONTH', minutes: 43200 }] as const).map(t => (
+              <button
+                key={t.label}
+                className={`mvk-pill ${!customDate && minutes === t.minutes ? 'active' : ''}`}
+                onClick={() => pickQuick(t.minutes)}
+              >
+                {t.label}
+              </button>
+            ))}
+            <button
+              className={`mvk-pill ${showDatePicker || customDate ? 'active' : ''}`}
+              onClick={() => setShowDatePicker(s => !s)}
+            >
+              PICK DATE
+            </button>
+          </div>
+          {showDatePicker && (
+            <input
+              type="datetime-local"
+              className="mvk-textarea"
+              style={{ marginTop: 10, minHeight: 'auto' }}
+              value={customDate}
+              min={new Date().toISOString().slice(0, 16)}
+              onChange={e => handleCustomDate(e.target.value)}
+            />
+          )}
+          {customDate && minutes && minutes > 0 && (
+            <div className="mvk-time-custom-label">⏱ {formatTimeLeft(minutes)} from now</div>
+          )}
 
           {error && <div className="mvk-error">{error}</div>}
 

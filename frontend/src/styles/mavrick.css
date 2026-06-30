@@ -10,11 +10,11 @@
   --mvk-sky-mid:    #C9728C;
   --mvk-sky-low:    #5E8FB0;
   --mvk-city:       #0D2535;
-  --mvk-card-outer: #0F3046;
-  --mvk-card-edge:  #1E4E68;
+  --mvk-card-outer: #FDF6E8;
+  --mvk-card-edge:  #C8B48A;
   --mvk-card-inner: #F0DDB5;
   --mvk-input:      #F5E8C8;
-  --mvk-input-edge: #D9C499;
+  --mvk-input-edge: #C4A97A;
 
   --mvk-coral:       #E85D50;
   --mvk-coral-light: #F07A5E;
@@ -44,12 +44,23 @@
 }
 
 /* ════════════════════ BACKGROUND SCENE ════════════════════ */
+/* The reference pixel-city artwork is the single source of truth for the
+   backdrop on EVERY screen. It is layered on top of a matching gradient so the
+   app still looks correct if the image is missing. Drop the artwork at
+   frontend/public/bg-city.png (served as /bg-city.png). */
 .mvk-bg {
   position: fixed;
   inset: 0;
+  /* Scope the artwork to the phone-width column so it fits the mobile frame
+     exactly on every device (no desktop stretch). Dark city fills any margin. */
+  width: 100%;
+  max-width: 440px;
+  margin: 0 auto;
   z-index: 0;
   overflow: hidden;
-  background:
+  background-color: #0D2535;
+  background-image:
+    url('/bg-city.png?v=3'),
     linear-gradient(
       180deg,
       #E8907A 0%,
@@ -59,7 +70,21 @@
       #2C4A60 78%,
       #0D2535 100%
     );
+  background-size: cover, cover;
+  background-position: center top, center top;
+  background-repeat: no-repeat, no-repeat;
+  image-rendering: pixelated;
   pointer-events: none;
+}
+
+/* Fill the area outside the phone column with the deep city colour so desktop
+   doesn't show white/empty bands beside the mobile artwork. */
+.mvk-app::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: #0D2535;
 }
 
 .mvk-moon {
@@ -171,10 +196,11 @@
   border: 2px solid var(--mvk-card-edge);
   border-radius: 16px;
   padding: 16px 14px;
+  color: var(--mvk-ink);
   box-shadow:
-    inset 0 0 0 2px rgba(95, 208, 230, 0.06),
-    0 6px 0 rgba(0, 0, 0, 0.28),
-    0 10px 26px rgba(0, 0, 0, 0.35);
+    inset 0 0 0 2px rgba(200, 180, 138, 0.25),
+    0 6px 0 rgba(0, 0, 0, 0.18),
+    0 10px 26px rgba(0, 0, 0, 0.14);
 }
 
 /* ── Greeting + Score ── */
@@ -192,7 +218,7 @@
 }
 .mvk-greet-name {
   font-size: 18px;
-  color: var(--mvk-cream-text);
+  color: var(--mvk-ink);
   letter-spacing: 0.03em;
   line-height: 1.15;
 }
@@ -209,11 +235,11 @@
   letter-spacing: 0.02em;
   line-height: 1;
 }
-.mvk-score-num span { font-size: 12px; color: var(--mvk-cream-text); }
+.mvk-score-num span { font-size: 12px; color: var(--mvk-muted); }
 
 .mvk-bar {
   height: 14px;
-  background: #0A1A26;
+  background: rgba(42, 128, 144, 0.14);
   border: 2px solid var(--mvk-card-edge);
   border-radius: 7px;
   overflow: hidden;
@@ -243,8 +269,15 @@
 .mvk-sec-head::after { margin-left: auto; opacity: 0; } /* keep spacing symmetric */
 .mvk-sec-title {
   font-size: 10px;
+  /* Light by default so bare headings stay readable over the busy background. */
   color: var(--mvk-cream-text);
   letter-spacing: 0.05em;
+  text-shadow: 1px 1px 0 rgba(13, 37, 53, 0.9), 0 0 6px rgba(13, 37, 53, 0.55);
+}
+/* Inside a cream card, headings revert to dark ink (no shadow needed). */
+.mvk-card .mvk-sec-title {
+  color: var(--mvk-ink);
+  text-shadow: none;
 }
 
 /* ════════════════════ DEADLINE LIST ════════════════════ */
@@ -479,9 +512,16 @@
 .mvk-nav {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  background: var(--mvk-card-outer);
-  border-top: 2px solid var(--mvk-card-edge);
-  padding: 8px 4px 7px;
+  gap: 4px;
+  background:
+    linear-gradient(180deg, #14405C 0%, #0E2E44 100%);
+  border: 2px solid #2A6585;
+  border-bottom: none;
+  border-radius: 16px 16px 0 0;
+  padding: 9px 8px 8px;
+  box-shadow:
+    inset 0 2px 0 rgba(95, 208, 230, 0.18),
+    0 -3px 14px rgba(0, 0, 0, 0.35);
 }
 .mvk-nav-item {
   display: flex;
@@ -489,19 +529,40 @@
   align-items: center;
   gap: 5px;
   background: transparent;
-  border: none;
+  border: 2px solid transparent;
+  border-radius: 10px;
   cursor: pointer;
-  padding: 4px 2px;
-  transition: transform 80ms;
+  padding: 6px 2px 5px;
+  transition: transform 80ms steps(2), background 0.12s, border-color 0.12s;
 }
 .mvk-nav-item:active { transform: translateY(1px); }
-.mvk-nav-ico { display: grid; place-items: center; height: 18px; }
+.mvk-nav-ico {
+  display: grid;
+  place-items: center;
+  height: 22px; width: 22px;
+  border-radius: 7px;
+  transition: background 0.12s;
+}
 .mvk-nav-label {
   font-size: 6px;
   letter-spacing: 0.02em;
-  color: var(--mvk-label);
+  color: #8FB4C6;
 }
-.mvk-nav-item.active .mvk-nav-label { color: var(--mvk-coral); }
+/* Active tab — coral framed pill, lifted, glowing icon chip */
+.mvk-nav-item.active {
+  background: rgba(232, 93, 80, 0.14);
+  border-color: var(--mvk-coral);
+  box-shadow: 0 0 0 1px rgba(232, 93, 80, 0.25), 0 3px 0 var(--mvk-coral-dark);
+  transform: translateY(-3px);
+}
+.mvk-nav-item.active .mvk-nav-ico {
+  background: rgba(232, 93, 80, 0.22);
+  box-shadow: 0 0 8px rgba(232, 93, 80, 0.45);
+}
+.mvk-nav-item.active .mvk-nav-label {
+  color: var(--mvk-coral);
+  text-shadow: 0 0 6px rgba(232, 93, 80, 0.4);
+}
 
 .mvk-strip {
   display: flex;
@@ -596,7 +657,7 @@
   letter-spacing: 0.08em;
   margin: 18px 0 10px;
 }
-.mvk-voice-title { color: var(--mvk-cream-text); }
+.mvk-voice-title { color: var(--mvk-ink); }
 .mvk-voice-title::before,
 .mvk-voice-title::after { content: ' + '; color: var(--mvk-coral); }
 
@@ -713,8 +774,8 @@
   height: 58px;
   margin-top: 18px;
   border-radius: 12px;
-  background: linear-gradient(180deg, var(--mvk-coral-light), var(--mvk-coral));
-  border: 3px solid var(--mvk-coral-dark);
+  background: linear-gradient(90deg, var(--mvk-coral) 0%, var(--mvk-teal) 100%);
+  border: 3px solid #1A5F6E;
   color: var(--mvk-cream-text);
   font-family: 'Press Start 2P', cursive;
   font-size: 14px;
@@ -725,7 +786,7 @@
   gap: 12px;
   cursor: pointer;
   position: relative;
-  box-shadow: 0 5px 0 var(--mvk-coral-dark);
+  box-shadow: 0 5px 0 #1A5F6E;
   transition: transform 80ms, box-shadow 80ms;
 }
 .mvk-save-btn::after {
@@ -736,8 +797,8 @@
   border-radius: 7px;
   pointer-events: none;
 }
-.mvk-save-btn:hover  { transform: translateY(2px); box-shadow: 0 3px 0 var(--mvk-coral-dark); }
-.mvk-save-btn:active { transform: translateY(5px); box-shadow: 0 0 0 var(--mvk-coral-dark); }
+.mvk-save-btn:hover  { transform: translateY(2px); box-shadow: 0 3px 0 #1A5F6E; }
+.mvk-save-btn:active { transform: translateY(5px); box-shadow: 0 0 0 #1A5F6E; }
 
 .mvk-reassure {
   display: flex;
@@ -799,7 +860,7 @@
 @keyframes mvk-spin { to { transform: rotate(360deg); } }
 .mvk-loading-line {
   font-size: 10px;
-  color: var(--mvk-cream-text);
+  color: var(--mvk-ink);
   line-height: 1.7;
   animation: mvk-blink 1.1s steps(1) infinite;
 }
@@ -815,7 +876,7 @@
 }
 .mvk-done-title {
   font-size: 13px;
-  color: var(--mvk-cream-text);
+  color: var(--mvk-ink);
   letter-spacing: 0.03em;
   margin-bottom: 8px;
 }
@@ -857,7 +918,7 @@
 }
 .mvk-now-action {
   font-size: 11px;
-  color: var(--mvk-cream-text);
+  color: var(--mvk-ink);
   line-height: 1.7;
 }
 .mvk-done-meta {
@@ -871,9 +932,9 @@
 /* ════════════════════ AI RESCUE PLAN ════════════════════ */
 .mvk-hero-word {
   font-size: 30px;
-  color: var(--mvk-coral);
+  color: #1A2E3C;
   letter-spacing: 0.04em;
-  text-shadow: 3px 3px 0 rgba(13, 37, 53, 0.55);
+  text-shadow: 2px 2px 0 rgba(255, 246, 230, 0.4);
   line-height: 1.2;
   margin-bottom: 10px;
 }
@@ -906,12 +967,12 @@
   letter-spacing: 0.02em;
   line-height: 1;
 }
-.mvk-urgency-score span { font-size: 15px; color: var(--mvk-cream-text); }
+.mvk-urgency-score span { font-size: 15px; color: var(--mvk-muted); }
 
 .mvk-seg-bar {
   display: flex;
   gap: 2px;
-  background: #0A1A26;
+  background: rgba(42, 128, 144, 0.1);
   border: 2px solid var(--mvk-card-edge);
   border-radius: 6px;
   padding: 3px;
@@ -920,7 +981,7 @@
 .mvk-seg {
   flex: 1;
   height: 12px;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(0, 0, 0, 0.08);
   border-radius: 1px;
 }
 .mvk-seg.on {
@@ -1070,23 +1131,25 @@
 }
 
 /* ════════════════════ EXECUTION MODE ════════════════════ */
-/* Night background variant */
-.mvk-app--night .mvk-bg {
+/* Night variant — keep the city artwork but tint it cooler/darker. */
+.mvk-app--night .mvk-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
   background: linear-gradient(
     180deg,
-    #7C5566 0%,
-    #574B6E 20%,
-    #34416B 42%,
-    #1E2C50 66%,
-    #0C1A30 100%
+    rgba(40, 30, 60, 0.55) 0%,
+    rgba(30, 44, 80, 0.6) 50%,
+    rgba(12, 26, 48, 0.78) 100%
   );
+  pointer-events: none;
 }
-.mvk-app--night .mvk-bg .mvk-cloud { opacity: 0.45; }
 
 /* Darker card variant */
 .mvk-card-dark {
   background: #0A1B2A;
   border-color: #1B3C50;
+  color: var(--mvk-cream-text);
 }
 
 /* EXECUTION MODE banner */
@@ -1326,14 +1389,29 @@
   letter-spacing: 0.04em;
   line-height: 1.25;
   text-align: center;
-  text-shadow: 2px 2px 0 rgba(13, 37, 53, 0.4);
+  text-shadow:
+    2px 2px 0 rgba(13, 37, 53, 0.95),
+    -1px -1px 0 rgba(13, 37, 53, 0.6),
+    0 0 8px rgba(13, 37, 53, 0.5);
 }
 .mvk-page-sub {
   text-align: center;
   font-size: 9px;
-  color: #2A3F4D;
+  color: var(--mvk-cream-text);
   line-height: 1.6;
   margin-bottom: 16px;
+  text-shadow: 1px 1px 0 rgba(13, 37, 53, 0.9), 0 0 6px rgba(13, 37, 53, 0.55);
+}
+
+/* Space reserved for the MAVRICK branding baked into the background artwork. */
+.mvk-brand-space {
+  height: clamp(150px, 21vh, 215px);
+}
+
+/* Utility: any bare text sitting directly on the background. */
+.mvk-on-bg-text {
+  color: var(--mvk-cream-text) !important;
+  text-shadow: 1px 1px 0 rgba(13, 37, 53, 0.9), 0 0 6px rgba(13, 37, 53, 0.55);
 }
 
 /* ════════════════════ AUTH FORMS ════════════════════ */
@@ -1390,7 +1468,7 @@
   cursor: pointer;
   font-family: 'Press Start 2P', cursive;
   font-size: 8px;
-  color: var(--mvk-cream-text);
+  color: var(--mvk-ink);
   letter-spacing: 0.02em;
   text-align: left;
   line-height: 1.6;
@@ -1404,7 +1482,8 @@
   flex-shrink: 0;
 }
 .mvk-checkbox.on { background: var(--mvk-coral); border-color: var(--mvk-coral-dark); }
-.mvk-auth-link { font-size: 8px; color: var(--mvk-coral); letter-spacing: 0.02em; cursor: pointer; text-decoration: none; }
+.mvk-auth-link       { font-size: 8px; color: var(--mvk-coral); letter-spacing: 0.02em; cursor: pointer; text-decoration: none; }
+.mvk-auth-link-teal  { font-size: 8px; color: var(--mvk-teal);  letter-spacing: 0.02em; cursor: pointer; text-decoration: none; }
 
 .mvk-or {
   display: flex;
@@ -1418,7 +1497,7 @@
   content: '';
   flex: 1;
   height: 0;
-  border-top: 2px dotted rgba(255, 255, 255, 0.18);
+  border-top: 2px dotted rgba(0, 0, 0, 0.18);
 }
 
 .mvk-social-btn {
@@ -1641,7 +1720,7 @@
   display: grid; place-items: center;
   box-shadow: 0 3px 0 var(--mvk-coral-dark);
 }
-.mvk-cal-month { font-size: 12px; color: var(--mvk-cream-text); letter-spacing: 0.04em; }
+.mvk-cal-month { font-size: 12px; color: var(--mvk-ink); letter-spacing: 0.04em; }
 .mvk-cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
 .mvk-cal-weekdays { margin-bottom: 4px; }
 .mvk-cal-wd { font-size: 6px; color: var(--mvk-label); text-align: center; padding: 3px 0; }
@@ -1651,10 +1730,21 @@
   display: grid;
   place-items: center;
   font-size: 8px;
-  color: var(--mvk-cream-text);
+  color: var(--mvk-ink);
   border-radius: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: 'Press Start 2P', cursive;
+  transition: background 120ms, box-shadow 120ms;
 }
-.mvk-cal-cell.out { color: rgba(255, 255, 255, 0.22); }
+.mvk-cal-cell:not(.out):not(.today):hover { background: rgba(95, 208, 230, 0.14); }
+.mvk-cal-cell.selected:not(.today) {
+  background: rgba(42, 128, 144, 0.38);
+  box-shadow: 0 0 0 2px #2A8090;
+  color: #5FD0E6;
+}
+.mvk-cal-cell.out { color: rgba(0, 0, 0, 0.22); cursor: default; pointer-events: none; }
 .mvk-cal-cell.today {
   background: var(--mvk-coral);
   color: #fff;
@@ -1698,7 +1788,7 @@
   border-radius: 5px;
   flex-shrink: 0;
 }
-.mvk-cal-event-title { font-size: 8px; color: var(--mvk-cream-text); letter-spacing: 0.02em; margin-bottom: 4px; }
+.mvk-cal-event-title { font-size: 8px; color: var(--mvk-ink); letter-spacing: 0.02em; margin-bottom: 4px; }
 .mvk-cal-event-time { font-size: 6px; color: var(--mvk-label); line-height: 1.4; }
 
 .mvk-cal-ai-intro {
@@ -1728,7 +1818,7 @@
   align-items: flex-start;
   gap: 7px;
   font-size: 7px;
-  color: var(--mvk-cream-text);
+  color: var(--mvk-ink);
   line-height: 1.6;
 }
 
@@ -1761,7 +1851,7 @@
 }
 .mvk-prof-label { font-size: 6px; color: var(--mvk-label); letter-spacing: 0.04em; margin-bottom: 3px; }
 .mvk-prof-val {
-  font-size: 8px; color: var(--mvk-cream-text); letter-spacing: 0.01em;
+  font-size: 8px; color: var(--mvk-ink); letter-spacing: 0.01em;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 
@@ -1789,13 +1879,13 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  background: rgba(242, 200, 75, 0.08);
-  border: 2px solid rgba(242, 200, 75, 0.3);
+  background: rgba(11, 28, 40, 0.92);
+  border: 2px solid rgba(242, 200, 75, 0.5);
   border-radius: 11px;
   padding: 14px;
 }
 .mvk-badge-banner-title { font-size: 9px; color: #F2C84B; letter-spacing: 0.03em; margin-bottom: 7px; }
-.mvk-badge-banner-desc { font-size: 7px; color: var(--mvk-label); line-height: 1.7; }
+.mvk-badge-banner-desc { font-size: 7px; color: #C9D4DE; line-height: 1.7; }
 
 /* ════════════════════ LANDING ════════════════════ */
 .mvk-landing-desc {
@@ -1855,7 +1945,7 @@
   border-bottom: 1px solid rgba(95, 208, 230, 0.08);
 }
 .mvk-set-row:last-of-type { border-bottom: none; }
-.mvk-set-label { font-size: 8px; color: var(--mvk-cream-text); letter-spacing: 0.02em; }
+.mvk-set-label { font-size: 8px; color: var(--mvk-ink); letter-spacing: 0.02em; }
 .mvk-set-hint { font-size: 7px; color: var(--mvk-label); margin-top: 4px; line-height: 1.5; }
 .mvk-set-val {
   font-size: 8px; color: var(--mvk-label); text-align: right;
@@ -2007,6 +2097,210 @@
   .mvk-side-right { right: calc(50% - 460px); }
 }
 
+/* ════════════════════ DESKTOP PHONE FRAME ════════════════════
+   On mobile (< 900px): mvk-desktop-wrap and mvk-phone-shell are
+   display:contents — they generate no box, children render exactly
+   as before. All phone decoration elements are hidden.
+   On desktop (≥ 900px): the app is centered inside a realistic
+   phone frame. Both position:fixed children (.mvk-bg, .mvk-footer)
+   are contained within .mvk-app via transform: translateZ(0).
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Mobile base — transparent pass-through */
+.mvk-desktop-wrap  { display: contents; }
+.mvk-phone-shell   { display: contents; }
+.mvk-phone-banner,
+.mvk-phone-notch,
+.mvk-phone-home    { display: none; }
+
+@media (min-width: 900px) {
+  /* ── Desktop page backdrop ── */
+  html, body {
+    background: #0b0f1a;
+    min-height: 100%;
+  }
+
+  /* ── Outer centering wrapper ── */
+  .mvk-desktop-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background: radial-gradient(ellipse at 50% 35%, #1b2645 0%, #0b0f1a 68%);
+    gap: 20px;
+    padding: 36px 0;
+  }
+
+  /* ── "Designed for mobile" banner ── */
+  .mvk-phone-banner {
+    display: block;
+    margin: 0;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 8px;
+    color: rgba(255, 246, 230, 0.36);
+    letter-spacing: 0.09em;
+    text-align: center;
+  }
+
+  /* ── Phone outer shell ── */
+  .mvk-phone-shell {
+    display: flex;
+    flex-direction: column;
+    width: 393px;
+    /* fits screens as small as ~780px tall (laptop) */
+    height: min(852px, calc(100vh - 130px));
+    background: #1c1c1e;
+    border-radius: 52px;
+    overflow: hidden;
+    position: relative;
+    /* layered ring shadow mimics aluminium frame + depth */
+    box-shadow:
+      0 0 0 1px #3a3a3c,
+      0 0 0 3px #111,
+      0 0 0 5px #2c2c2e,
+      inset 0  1px 0 rgba(255, 255, 255, 0.10),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.50),
+      0 40px 100px rgba(0, 0, 0, 0.70),
+      0 80px 180px rgba(0, 0, 0, 0.45);
+  }
+
+  /* Power button — right side */
+  .mvk-phone-shell::before {
+    content: '';
+    position: absolute;
+    right: -4px;
+    top: 188px;
+    width: 4px;
+    height: 76px;
+    background: #2a2a2c;
+    border-radius: 0 3px 3px 0;
+    box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.06);
+  }
+  /* Volume buttons — left side (silent toggle + vol up + vol down) */
+  .mvk-phone-shell::after {
+    content: '';
+    position: absolute;
+    left: -4px;
+    top: 152px;
+    width: 4px;
+    height: 34px;
+    background: #2a2a2c;
+    border-radius: 3px 0 0 3px;
+    box-shadow:
+      inset 1px 0 0 rgba(255, 255, 255, 0.06),
+      0 54px  0 #2a2a2c,   /* volume up  */
+      0 96px  0 #2a2a2c;   /* volume down */
+  }
+
+  /* ── Dynamic island / notch ── */
+  .mvk-phone-notch {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    width: 126px;
+    height: 36px;
+    background: #000;
+    border-radius: 0 0 24px 24px;
+    margin: 0 auto;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 30;
+  }
+  .mvk-phone-speaker {
+    display: block;
+    width: 54px;
+    height: 5px;
+    background: #1a1a1a;
+    border-radius: 3px;
+  }
+  .mvk-phone-cam {
+    display: block;
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    background: #111;
+    border: 1.5px solid #222;
+    /* subtle teal lens glint matching MAVRICK palette */
+    box-shadow: 0 0 0 2px #0a0a0a, inset 1px 1px 3px rgba(42, 128, 144, 0.35);
+  }
+
+  /* ── App screen — fills the phone between notch and home bar ── */
+  .mvk-phone-shell .mvk-app {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    position: relative;
+    width: 100%;
+    /* transform creates a new containing block for position:fixed children
+       (.mvk-bg and .mvk-footer) so they stay inside the phone frame */
+    transform: translateZ(0);
+  }
+
+  /* Background: now clipped to the phone screen */
+  .mvk-phone-shell .mvk-bg {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    left: 0;
+    right: 0;
+  }
+
+  /* Frame: revert two-column desktop layout, fill phone height */
+  .mvk-phone-shell .mvk-frame {
+    max-width: 100%;
+    height: 100%;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* Hide the info sidebar inside the phone */
+  .mvk-phone-shell .mvk-desktop-panel { display: none !important; }
+
+  /* Scroll area: takes remaining space between content and footer */
+  .mvk-phone-shell .mvk-scroll {
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+    overflow-y: auto;
+    scrollbar-width: none;
+  }
+  .mvk-phone-shell .mvk-scroll::-webkit-scrollbar { display: none; }
+
+  /* Footer: fixed relative to .mvk-app (transform containment) */
+  .mvk-phone-shell .mvk-footer {
+    width: 100%;
+    max-width: 100%;
+    left: 0;
+    transform: none;
+  }
+
+  /* Side letters: hide outside the phone */
+  .mvk-phone-shell .mvk-side-left,
+  .mvk-phone-shell .mvk-side-right { display: none; }
+
+  /* ── Home indicator bar ── */
+  .mvk-phone-home {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 24px;
+    flex-shrink: 0;
+    background: #1c1c1e;
+    position: relative;
+    z-index: 30;
+  }
+  .mvk-phone-home::before {
+    content: '';
+    display: block;
+    width: 134px;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.26);
+    border-radius: 3px;
+  }
+}
+
 /* ════════════════════ RESPONSIVE (small screens) ════════════════════ */
 @media (max-width: 380px) {
   .mvk-greet-name { font-size: 16px; }
@@ -2031,4 +2325,242 @@
   .mvk-onb-title { font-size: 14px; }
   .mvk-role-desc { font-size: 6px; }
   .mvk-ins-num { font-size: 20px; }
+}
+
+/* ════════════════════ CALENDAR MODAL (bottom-sheet) ════════════════════ */
+.mvk-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.72);
+  z-index: 200;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+.mvk-modal {
+  width: 100%;
+  max-width: 480px;
+  background: #0F3046;
+  border: 2px solid #1E4E68;
+  border-bottom: none;
+  border-radius: 16px 16px 0 0;
+  padding: 20px 16px 36px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+.mvk-modal-handle {
+  width: 36px; height: 4px;
+  background: rgba(95, 208, 230, 0.3);
+  border-radius: 2px;
+  margin: 0 auto 16px;
+}
+.mvk-modal-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid rgba(95, 208, 230, 0.12);
+}
+.mvk-modal-title {
+  font-family: 'Press Start 2P', cursive;
+  font-size: 11px;
+  color: #5FD0E6;
+  flex: 1;
+  letter-spacing: 0.04em;
+}
+.mvk-modal-sub {
+  font-family: 'Press Start 2P', cursive;
+  font-size: 7px;
+  color: var(--mvk-label);
+}
+.mvk-modal-close {
+  background: rgba(232, 93, 80, 0.12);
+  border: 1px solid rgba(232, 93, 80, 0.3);
+  color: var(--mvk-coral);
+  cursor: pointer;
+  padding: 7px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.mvk-modal-day-tasks { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+.mvk-modal-task-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 10px;
+  background: #0A1A26;
+  border-radius: 8px;
+  border: 1px solid rgba(95, 208, 230, 0.12);
+}
+.mvk-modal-empty {
+  font-family: 'Press Start 2P', cursive;
+  font-size: 7px;
+  color: var(--mvk-label);
+  text-align: center;
+  padding: 20px 0;
+  line-height: 1.8;
+}
+.mvk-modal-add-form {
+  background: #0A1A26;
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 12px;
+  border: 1px solid rgba(95, 208, 230, 0.15);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ════════════════════ PANIC MODE — CUSTOM DATE ════════════════════ */
+.mvk-time-custom-label {
+  font-family: 'Press Start 2P', cursive;
+  font-size: 7px;
+  color: #5FD0E6;
+  text-align: center;
+  margin-top: 8px;
+  letter-spacing: 0.02em;
+}
+.mvk-pills-ext {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-top: 6px;
+}
+@media (max-width: 380px) {
+  .mvk-pills-ext { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ════════════════════ AVATAR PICKER ════════════════════ */
+/* Framed portrait — teal pixel border like the reference player card. */
+.mvk-avatar-framed {
+  display: inline-block;
+  padding: 4px;
+  background: #14323F;
+  border: 2px solid #2A8090;
+  border-radius: 8px;
+  box-shadow: 0 0 0 2px #0E2430, 0 3px 0 rgba(0, 0, 0, 0.3);
+  line-height: 0;
+}
+.mvk-avatar-framed svg { border-radius: 4px; }
+
+.mvk-prof-avatar-btn {
+  position: relative;
+  border: none;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 6px;
+}
+.mvk-prof-avatar-btn:hover { filter: brightness(1.08); }
+.mvk-prof-avatar-edit {
+  position: absolute;
+  left: 50%;
+  bottom: -6px;
+  transform: translateX(-50%);
+  background: var(--mvk-coral);
+  color: var(--mvk-cream-text);
+  font-size: 5px;
+  letter-spacing: 0.06em;
+  padding: 2px 5px;
+  border-radius: 3px;
+  box-shadow: 0 2px 0 var(--mvk-coral-dark);
+  white-space: nowrap;
+}
+
+.mvk-avatar-picker {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 2px dashed var(--mvk-card-edge);
+}
+.mvk-avatar-picker-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.mvk-avatar-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+.mvk-avatar-opt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 3px;
+  background: var(--mvk-input);
+  border: 2px solid var(--mvk-input-edge);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: transform 0.12s steps(2), border-color 0.12s;
+}
+.mvk-avatar-opt:hover { transform: translateY(-2px); }
+.mvk-avatar-opt.active {
+  border-color: var(--mvk-coral);
+  box-shadow: 0 0 0 2px rgba(232, 93, 80, 0.3);
+  background: #FBEAD2;
+}
+.mvk-avatar-opt-label {
+  font-size: 5px;
+  letter-spacing: 0.04em;
+  color: var(--mvk-muted);
+}
+.mvk-avatar-opt.active .mvk-avatar-opt-label { color: var(--mvk-coral); }
+@media (max-width: 380px) {
+  .mvk-avatar-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* ════════════════════ SETTINGS EXTRAS ════════════════════ */
+.mvk-set-avatar-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-bottom: 12px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid var(--mvk-card-edge);
+}
+.mvk-set-edit-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--mvk-input);
+  border: 2px solid var(--mvk-input-edge);
+  border-radius: 5px;
+  color: var(--mvk-teal);
+  font-family: 'Press Start 2P', cursive;
+  font-size: 7px;
+  letter-spacing: 0.04em;
+  padding: 6px 9px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: transform 0.1s steps(2);
+}
+.mvk-set-edit-btn:hover { transform: translateY(-1px); }
+.mvk-set-edit-btn:disabled { opacity: 0.55; cursor: default; }
+
+.mvk-set-delete-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  margin-top: 10px;
+  background: transparent;
+  border: 2px solid rgba(232, 40, 48, 0.45);
+  border-radius: 8px;
+  color: #E82830;
+  font-family: 'Press Start 2P', cursive;
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  padding: 13px;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s;
+}
+.mvk-set-delete-btn:hover {
+  background: rgba(232, 40, 48, 0.08);
+  border-color: rgba(232, 40, 48, 0.7);
 }

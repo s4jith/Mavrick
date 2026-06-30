@@ -150,7 +150,6 @@ export function ExecutionMode() {
   if (complete) {
     return (
       <MavrickShell active="execute" night>
-        <Header />
         <motion.section
           className="mvk-card mvk-card-dark mvk-exec-done"
           initial={{ opacity: 0, y: 16 }}
@@ -178,8 +177,6 @@ export function ExecutionMode() {
   /* ── Active mission ── */
   return (
     <MavrickShell active="execute" night>
-      <Header />
-
       {/* EXECUTION MODE banner */}
       <div className="mvk-exec-banner">
         <LockIcon size={18} color="#E85D50" />
@@ -259,16 +256,3 @@ export function ExecutionMode() {
   )
 }
 
-function Header() {
-  return (
-    <header className="mvk-header">
-      <div className="mvk-logo">
-        <RobotMascot size={28} />
-        <div>
-          <div className="mvk-wordmark">MAVRICK</div>
-          <div className="mvk-badge">AI CRISIS COMMANDER</div>
-        </div>
-      </div>
-    </header>
-  )
-}

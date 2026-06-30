@@ -8,10 +8,9 @@ import {
 } from 'firebase/auth'
 import { auth, googleProvider, firebaseAuthError } from '../firebase'
 import { MavrickShell } from '../components/pixel/MavrickShell'
-import { RobotMascot } from '../components/pixel/RobotMascot'
 import { AuthField } from '../components/pixel/AuthField'
 import { BrandMark } from '../components/pixel/BrandMark'
-import { MailIcon, LockIcon, CheckIcon, PlayIcon } from '../components/icons/PixelIcons'
+import { MailIcon, LockIcon, CheckIcon } from '../components/icons/PixelIcons'
 
 export function Login() {
   const [email, setEmail] = useState('')
@@ -70,10 +69,8 @@ export function Login() {
   return (
     <MavrickShell>
       <div className="mvk-hero">
-        <RobotMascot size={58} />
-        <div className="mvk-hero-word">MAVRICK</div>
-        <div className="mvk-badge">AI CRISIS COMMANDER</div>
-        <div className="mvk-hero-sub">Turn <span className="mvk-coral">Panic</span> into a <span className="mvk-coral">Plan</span>. Instantly.</div>
+        <div className="mvk-brand-space" aria-hidden="true" />
+        <div className="mvk-hero-sub">Turn <span className="mvk-coral">panic</span> into a <span style={{ color: 'var(--mvk-teal)' }}>plan</span>. Instantly.</div>
       </div>
 
       <motion.form
@@ -98,7 +95,7 @@ export function Login() {
           </button>
           <button
             type="button"
-            className="mvk-auth-link"
+            className="mvk-auth-link-teal"
             onClick={forgotPassword}
             disabled={resetLoading}
             style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
@@ -115,12 +112,17 @@ export function Login() {
         )}
 
         <button type="submit" className="mvk-save-btn" disabled={loading}>
-          <PlayIcon size={16} color="#FFF6E6" /> {loading ? 'LOGGING IN…' : 'LOGIN'}
+          <LockIcon size={16} color="#FFF6E6" /> {loading ? 'LOGGING IN…' : 'LOGIN'}
         </button>
 
-        <div className="mvk-or"><span>OR</span></div>
+        <div className="mvk-or"><span>OR CONTINUE WITH</span></div>
 
-        <button type="button" className="mvk-social-btn" onClick={googleSignIn} disabled={loading}><BrandMark provider="google" size={20} /> CONTINUE WITH GOOGLE</button>
+        <button type="button" className="mvk-social-btn" onClick={googleSignIn} disabled={loading}>
+          <BrandMark provider="google" size={20} /> CONTINUE WITH GOOGLE
+        </button>
+        <button type="button" className="mvk-social-btn mvk-social-disabled" disabled title="Microsoft sign-in coming soon">
+          <BrandMark provider="microsoft" size={20} /> CONTINUE WITH MICROSOFT
+        </button>
 
         <div className="mvk-auth-foot">New here? <Link to="/register" className="mvk-auth-link">Create an account</Link></div>
       </motion.form>

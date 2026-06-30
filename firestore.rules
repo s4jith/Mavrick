@@ -1,0 +1,32 @@
+rules_version = '2';
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MAVRICK Firestore security rules
+//
+// ALL application data (users, history, reminders, settings) is read and written
+// exclusively by the FastAPI backend using the Firebase Admin SDK. The Admin SDK
+// runs with elevated privileges and BYPASSES these rules entirely, so the backend
+// keeps working no matter what is written here.
+//
+// Browser/client Firebase SDKs, however, ARE subject to these rules. Because the
+// web app ships its public Firebase config in the JS bundle, anyone could spin up
+// a client and try to read/write Firestore directly. We must not allow that —
+// so every client read and write is denied by default.
+//
+// If you ever move some reads to the client SDK, replace the catch-all below with
+// per-collection rules scoped to the signed-in user, e.g.:
+//
+//   match /users/{uid} {
+//     allow read, write: if request.auth != null && request.auth.uid == uid;
+//   }
+//
+// Deploy with:  firebase deploy --only firestore:rules
+// ─────────────────────────────────────────────────────────────────────────────
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

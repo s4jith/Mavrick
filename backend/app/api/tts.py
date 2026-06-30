@@ -8,11 +8,12 @@ speak.
 from __future__ import annotations
 
 import requests
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
 from ..runtime import settings
 from ..logging_config import get_logger
+from .auth import get_current_user
 
 router = APIRouter()
 log = get_logger("tts")
@@ -43,7 +44,7 @@ def tts_available() -> dict:
 
 
 @router.post("/")
-def synthesize(req: TTSRequest) -> dict:
+def synthesize(req: TTSRequest, current_user: dict = Depends(get_current_user)) -> dict:
     api_key = _tts_api_key()
     if not api_key:
         # 503 → frontend knows to use browser speechSynthesis instead.

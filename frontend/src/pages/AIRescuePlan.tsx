@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { MavrickShell } from '../components/pixel/MavrickShell'
-import { RobotMascot } from '../components/pixel/RobotMascot'
 import {
   SirenIcon, TimerIcon, BookIcon, HourglassIcon,
   SearchIcon, ImageIcon, MicIcon, CalendarIcon, RocketIcon, CheckIcon,
@@ -68,9 +67,6 @@ export function AIRescuePlan() {
     <MavrickShell active="execute">
       {/* ── Hero ── */}
       <div className="mvk-hero">
-        <RobotMascot size={56} mood="coach" />
-        <div className="mvk-hero-word">MAVRICK</div>
-        <div className="mvk-badge">AI CRISIS COMMANDER</div>
         <div className="mvk-rescue-title">AI RESCUE PLAN</div>
         <div className="mvk-rescue-sub">
           I've <span className="mvk-coral">analyzed</span> your crisis. Here's the <span className="mvk-coral">plan</span>.

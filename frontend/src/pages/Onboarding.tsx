@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { updateProfile } from '../api'
 import { MavrickShell } from '../components/pixel/MavrickShell'
-import { RobotMascot } from '../components/pixel/RobotMascot'
 import { GraduationCapIcon, BriefcaseIcon, RocketIcon, PaletteIcon, PlayIcon } from '../components/icons/PixelIcons'
 
 const ROLES = [
@@ -24,11 +23,7 @@ export function Onboarding() {
 
   return (
     <MavrickShell>
-      <div className="mvk-hero">
-        <RobotMascot size={54} mood="wave" />
-        <div className="mvk-hero-word">MAVRICK</div>
-        <div className="mvk-badge">AI CRISIS COMMANDER</div>
-      </div>
+      <div className="mvk-brand-space" aria-hidden="true" />
 
       <div className="mvk-onb-head">
         <div className="mvk-onb-title">WELCOME TO MAVRICK</div>

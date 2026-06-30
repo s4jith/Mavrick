@@ -152,7 +152,7 @@ export async function synthesizeSpeech(text: string): Promise<string | null> {
   try {
     const res = await fetch(`${BASE}/api/tts/`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: await authHeaders(),
       body: JSON.stringify({ text }),
     })
     if (!res.ok) return null

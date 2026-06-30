@@ -21,11 +21,7 @@ export function ConnectDigitalLife() {
 
   return (
     <MavrickShell>
-      <div className="mvk-hero">
-        <RobotMascot size={54} mood="wave" />
-        <div className="mvk-hero-word">MAVRICK</div>
-        <div className="mvk-badge">AI CRISIS COMMANDER</div>
-      </div>
+      <div className="mvk-brand-space" aria-hidden="true" />
 
       <div className="mvk-onb-head">
         <div className="mvk-onb-title">CONNECT YOUR DIGITAL LIFE</div>

@@ -53,6 +53,17 @@ class Settings:
     firebase_project_id: str = _clean(os.getenv("FIREBASE_PROJECT_ID"))
     firebase_service_account: str = _clean(os.getenv("FIREBASE_SERVICE_ACCOUNT")) or "service-account.json"
 
+    # CORS — comma-separated list of allowed origins.  Always includes localhost
+    # for local dev; add your prod domain here or via ALLOWED_ORIGINS env var.
+    # Example: ALLOWED_ORIGINS=https://mavrick.app,https://www.mavrick.app
+    allowed_origins_extra: list[str] = field(
+        default_factory=lambda: [
+            o.strip()
+            for o in os.getenv("ALLOWED_ORIGINS", "").split(",")
+            if o.strip()
+        ]
+    )
+
     @property
     def daily_budget(self) -> int:
         return self.daily_limit_per_key * len(self.gemini_keys)

@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { MavrickShell } from '../components/pixel/MavrickShell'
-import { BrandHeader } from '../components/pixel/BrandHeader'
 import { RobotMascot } from '../components/pixel/RobotMascot'
 import { getHistory } from '../api'
 import type { CrisisHistory } from '../types'
@@ -59,7 +58,6 @@ export function Insights() {
 
   return (
     <MavrickShell active="profile">
-      <BrandHeader />
 
       <div className="mvk-page-title">
         <ChartIcon size={20} color="#E85D50" />
